@@ -9,6 +9,12 @@ class Program
     {
         Console.WriteLine("=== STEAM ===");
 
+        // Memuat games (games.json) - zikry
+        var repo = new Repository<Game>();
+        var games = repo.Load("games.json");
+
+        Console.WriteLine($"Jumlah game berhasil dimuat: {games.Count}");
+
         // but ngeload config nya (workflow.json) - rang
         State startState = State.STORE;
 
