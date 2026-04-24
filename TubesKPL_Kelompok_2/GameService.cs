@@ -10,7 +10,9 @@ public class GameService
 
 	public Game getGameById(int id)
 	{
-		return games.Find(game => game.Id == id);
+		var game = games.Find(game => game.Id == id);
+		if(game == null) throw new Exception("Game tidak ditemukan");
+		return game;
 	}
 
 	public string addToCart(Game game)
@@ -38,7 +40,7 @@ public class GameService
 		if (cartGames.Count == 0) return "Tidak ada game di cart untuk checkout";
 		foreach (var game in cartGames)
 		{
-			BuyGame(game);
+			buyGame(game);
 		}
 		return "Semua game di cart berhasil dibeli";
     }
