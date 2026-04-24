@@ -1,0 +1,12 @@
+[
+  { "Id": 1, "Name": "GTA V", "Price": 660, "Status": 0 },
+  { "Id": 2, "Name": "Elden Ring", "Price": 600, "Status": 0 },
+  { "Id": 3, "Name": "Cyberpunk 2077", "Price": 700, "Status": 0 },
+  { "Id": 4, "Name": "God of War", "Price": 730, "Status": 0 },
+  { "Id": 5, "Name": "The Witcher 3", "Price": 360, "Status": 0 },
+  { "Id": 6, "Name": "Read Dead Redemption 2", "Price": 880, "Status": 0 },
+  { "Id": 7, "Name": "Hades", "Price": 207, "Status": 0 },
+  { "Id": 8, "Name": "Stardew Valley", "Price": 116, "Status": 0 },
+  { "Id": 9, "Name": "Terraria", "Price": 91, "Status": 0 },
+  { "Id": 10, "Name": "Pragmata", "Price": 780, "Status": 0 }
+]
