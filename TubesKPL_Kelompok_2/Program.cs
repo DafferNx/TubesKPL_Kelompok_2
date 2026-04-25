@@ -132,7 +132,7 @@ class Program
                     break;
 
                 case State.CART:
-                    input = choice switchs
+                    input = choice switch
                     {
                         1 => Input.BUY_CART,
                         2 => Input.BACK,
