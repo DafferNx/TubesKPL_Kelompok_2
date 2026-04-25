@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -14,6 +14,7 @@ class Program
 
         Console.WriteLine($"Jumlah game berhasil dimuat: {games.Count}");
 
+        // but ngeload config nya (workflow.json) - rang
         State startState = State.STORE;
 
         if (File.Exists("workflow.json"))
@@ -26,7 +27,7 @@ class Program
                 startState = Enum.Parse<State>(config["initialState"]);
             }
         }
-
+        // FSM TABLE (Table-driven) - rang
         var table = new Dictionary<(State, Input), State>
         {
             {(State.STORE, Input.VIEW_DETAIL), State.DETAIL},
@@ -41,7 +42,7 @@ class Program
             {(State.LIBRARY, Input.REFUND), State.LIBRARY},
             {(State.LIBRARY, Input.BACK), State.STORE}
         };
-
+        // ini looping buat jalani semuanya
         var fsm = new StateMachine(startState, table);
 
         Game selectedGame = null;
@@ -52,6 +53,7 @@ class Program
             Console.WriteLine($"Current State: {fsm.CurrentState}");
             Console.WriteLine("=================================");
 
+            // ini adalah menunya tapi berdasarkan state - rang
             switch (fsm.CurrentState)
             {
                 case State.STORE:
@@ -104,6 +106,7 @@ class Program
 
             Input input;
 
+            // gunanya: mapping input sesuai state - rang
             switch (fsm.CurrentState)
             {
                 case State.STORE:
@@ -153,7 +156,7 @@ class Program
                     input = Input.BACK;
                     break;
             }
-
+            // buat ngirim ke fsm - rang
             fsm.Send(input);
         }
 
