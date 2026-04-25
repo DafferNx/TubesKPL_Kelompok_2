@@ -9,13 +9,11 @@ class Program
     {
         Console.WriteLine("=== STEAM ===");
 
-        // Memuat games (games.json) - zikry
         var repo = new Repository<Game>();
         var games = repo.Load("games.json");
 
         Console.WriteLine($"Jumlah game berhasil dimuat: {games.Count}");
 
-        // but ngeload config nya (workflow.json) - rang
         State startState = State.STORE;
 
         if (File.Exists("workflow.json"))
@@ -29,7 +27,6 @@ class Program
             }
         }
 
-        // FSM TABLE (Table-driven) - rang
         var table = new Dictionary<(State, Input), State>
         {
             {(State.STORE, Input.VIEW_DETAIL), State.DETAIL},
@@ -45,28 +42,40 @@ class Program
             {(State.LIBRARY, Input.BACK), State.STORE}
         };
 
-
         var fsm = new StateMachine(startState, table);
 
-        // ini looping buat jalani semuanya
+        Game selectedGame = null;
+
         while (true)
         {
             Console.WriteLine("\n=================================");
             Console.WriteLine($"Current State: {fsm.CurrentState}");
             Console.WriteLine("=================================");
 
-            // ini adalah menunya tapi berdasarkan state - rang
             switch (fsm.CurrentState)
             {
                 case State.STORE:
                     Console.WriteLine("STORE MENU");
-                    Console.WriteLine("1. View Detail Game");
+
+                    foreach (var game in games)
+                    {
+                        Console.WriteLine($"{game.Id}. {game.Name} - {game.Price}");
+                    }
+
                     Console.WriteLine("0. Exit");
                     break;
 
                 case State.DETAIL:
-                    Console.WriteLine("DETAIL MENU");
-                    Console.WriteLine("1. Add to Cart");
+                    Console.WriteLine("DETAIL GAME");
+
+                    if (selectedGame != null)
+                    {
+                        Console.WriteLine($"Nama  : {selectedGame.Name}");
+                        Console.WriteLine($"Harga : {selectedGame.Price}");
+                        Console.WriteLine($"Status: {selectedGame.Status}");
+                    }
+
+                    Console.WriteLine("\n1. Add to Cart");
                     Console.WriteLine("2. Buy Direct");
                     Console.WriteLine("3. Back to Store");
                     break;
@@ -95,15 +104,21 @@ class Program
 
             Input input;
 
-            // gunanya: mapping input sesuai state - rang
             switch (fsm.CurrentState)
             {
                 case State.STORE:
-                    input = choice switch
+                    var game = games.Find(g => g.Id == choice);
+
+                    if (game != null)
                     {
-                        1 => Input.VIEW_DETAIL,
-                        _ => Input.BACK
-                    };
+                        selectedGame = game;
+                        input = Input.VIEW_DETAIL;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Game tidak valid");
+                        input = Input.BACK;
+                    }
                     break;
 
                 case State.DETAIL:
@@ -139,7 +154,6 @@ class Program
                     break;
             }
 
-            // buat ngirim ke fsm - rang
             fsm.Send(input);
         }
 
