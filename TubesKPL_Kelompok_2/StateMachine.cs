@@ -1,47 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public enum State
+public enum GameAction
 {
-    STORE,
-    DETAIL,
-    CART,
-    LIBRARY
+    AddToCart,
+    BuyDirect,
+    Checkout,
+    Refund
 }
 
-public enum Input
+public class GameStateMachine
 {
-    VIEW_DETAIL,
-    ADD_TO_CART,
-    BUY_DIRECT,
-    BUY_CART,
-    REFUND,
-    BACK
-}
+    private readonly Dictionary<(GameStatus Status, GameAction Action), GameStatus> transitions;
 
-public class StateMachine
-{
-    public State CurrentState { get; private set; }
-    private Dictionary<(State, Input), State> table;
-
-    public StateMachine(State startState, Dictionary<(State, Input), State> table)
+    public GameStateMachine()
     {
-        CurrentState = startState;
-        this.table = table;
+        transitions = new Dictionary<(GameStatus, GameAction), GameStatus>
+        {
+            {(GameStatus.NotOwned, GameAction.AddToCart), GameStatus.Cart},
+            {(GameStatus.NotOwned, GameAction.BuyDirect), GameStatus.Owned},
+            {(GameStatus.Cart, GameAction.Checkout), GameStatus.Owned},
+            {(GameStatus.Owned, GameAction.Refund), GameStatus.NotOwned}
+        };
     }
 
-    public void Send(Input input)
+    public GameStatus Move(GameStatus currentStatus, GameAction action)
     {
-        var key = (CurrentState, input);
+        var key = (currentStatus, action);
 
-        if (table.ContainsKey(key))
-        {
-            CurrentState = table[key];
-            Console.WriteLine($"Berpindah ke state: {CurrentState}");
-        }
-        else
-        {
-            Console.WriteLine("Aksi tidak valid di state ini");
-        }
+        if (!transitions.TryGetValue(key, out GameStatus nextStatus))
+            throw new InvalidOperationException($"Aksi {action} tidak valid untuk status game {currentStatus}");
+
+        return nextStatus;
     }
 }
