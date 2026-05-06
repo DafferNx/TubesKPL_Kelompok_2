@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentValidation.Results;
 
 public class AdminService
 {
@@ -15,14 +16,22 @@ public class AdminService
 
     public string AddGame(string name, int price)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            return "Nama game tidak boleh kosong";
-
-        if (price < 0)
-            return "Harga game tidak boleh negatif";
-
         int newId = games.Count == 0 ? 1 : games.Max(game => game.Id) + 1;
-        games.Add(new Game(newId, name.Trim(), price));
+        Game newGame = new Game
+        {
+            Id = newId,
+            Name = name.Trim(),
+            Price = price,
+            Status = GameStatus.NotOwned
+        };
+
+        GameValidator validator = new GameValidator();
+        ValidationResult result = validator.Validate(newGame);
+
+        if (!result.IsValid)
+            return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
+
+        games.Add(newGame);
 
         return $"Game berhasil ditambahkan dengan ID {newId}";
     }

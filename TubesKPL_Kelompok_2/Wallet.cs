@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Wallet
 {
@@ -39,8 +40,11 @@ public class Wallet
         if (CurrentState != WalletState.Active)
             return "Wallet harus aktif untuk top up";
 
-        if (amount <= 0)
-            return "Jumlah top up harus lebih dari 0";
+        WalletValidator validator = new WalletValidator();
+        var result = validator.Validate(amount);
+
+        if (!result.IsValid)
+            return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
 
         Balance += amount;
         return $"Top up berhasil. Balance sekarang: Rp{Balance}";
@@ -54,9 +58,12 @@ public class Wallet
             return false;
         }
 
-        if (amount <= 0)
+        WalletValidator validator = new WalletValidator();
+        var result = validator.Validate(amount);
+
+        if (!result.IsValid)
         {
-            message = "Nominal pembayaran tidak valid";
+            message = string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
             return false;
         }
 
