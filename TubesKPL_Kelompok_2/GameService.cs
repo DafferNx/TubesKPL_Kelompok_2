@@ -69,8 +69,11 @@ public class GameService
 
     public string requestRefund(Game game)
     {
-        if (game == null) return "Game tidak ditemukan";
-        if (game.Status != GameStatus.Owned) return "Refund hanya bisa diajukan untuk game yang sudah dimiliki";
+        RefundValidator validator = new RefundValidator();
+        var result = validator.Validate(game);
+
+        if (!result.IsValid)
+            return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
 
         return ChangeGameStatus(game, GameAction.RequestRefund, "Request refund berhasil diajukan dan menunggu persetujuan admin");
     }
