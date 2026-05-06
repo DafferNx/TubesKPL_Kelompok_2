@@ -1,6 +1,7 @@
-﻿public enum GameStatus
+public enum GameStatus
 {
-    NotOwned,  
-    Cart,     
-    Owned     
+    NotOwned,
+    Cart,
+    Owned,
+    PendingRefund
 }

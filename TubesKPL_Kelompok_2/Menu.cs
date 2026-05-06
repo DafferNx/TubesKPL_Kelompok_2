@@ -1,11 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 public static class Menu
 {
-    public static void ShowStore(List<Game> games)
+    public static void ShowRoleMenu()
+    {
+        Console.WriteLine("=== SETIM ===");
+        Console.WriteLine("1. Masuk sebagai User");
+        Console.WriteLine("2. Masuk sebagai Admin");
+        Console.WriteLine("0. Exit");
+    }
+
+    public static void ShowStore(List<Game> games, User user)
     {
         Console.WriteLine("=== STORE ===");
+        Console.WriteLine($"User: {user.Username} | Wallet: {user.Wallet.CurrentState} | Balance: Rp{user.Wallet.Balance}");
+        Console.WriteLine();
 
         foreach (var game in games)
         {
@@ -15,7 +25,9 @@ public static class Menu
         Console.WriteLine();
         Console.WriteLine("11. Library");
         Console.WriteLine("12. Cart");
-        Console.WriteLine("0. Exit");
+        Console.WriteLine("13. Aktifkan Wallet");
+        Console.WriteLine("14. Top Up Wallet");
+        Console.WriteLine("0. Logout");
         Console.WriteLine("Pilih nomor untuk lihat detail game / berpindah halaman");
     }
 
@@ -69,7 +81,7 @@ public static class Menu
         {
             foreach (var game in ownedGames)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price}");
+                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price} [{game.Status}]");
             }
         }
 
@@ -88,7 +100,49 @@ public static class Menu
 
         Console.WriteLine();
         Console.WriteLine("1. Kembali ke Library");
-        Console.WriteLine("2. Refund");
+        Console.WriteLine("2. Ajukan Refund");
+    }
+
+    public static void ShowAdminMenu()
+    {
+        Console.WriteLine("=== ADMIN MENU ===");
+        Console.WriteLine("1. Tambah Game ke JSON");
+        Console.WriteLine("2. Lihat Request Refund");
+        Console.WriteLine("0. Logout");
+    }
+
+    public static void ShowPendingRefunds(List<Game> pendingRefundGames)
+    {
+        Console.WriteLine("=== REQUEST REFUND ===");
+
+        if (pendingRefundGames.Count == 0)
+        {
+            Console.WriteLine("Tidak ada request refund.");
+        }
+        else
+        {
+            foreach (var game in pendingRefundGames)
+            {
+                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price} [{game.Status}]");
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Pilih ID game untuk proses refund");
+        Console.WriteLine("0. Kembali ke Admin Menu");
+    }
+
+    public static void ShowRefundDecision(Game game)
+    {
+        Console.WriteLine("=== PROSES REFUND ===");
+        Console.WriteLine($"ID     : {game.Id}");
+        Console.WriteLine($"Nama   : {game.Name}");
+        Console.WriteLine($"Harga  : Rp{game.Price}");
+        Console.WriteLine($"Status : {game.Status}");
+        Console.WriteLine();
+        Console.WriteLine("1. Approve Refund");
+        Console.WriteLine("2. Reject Refund");
+        Console.WriteLine("0. Kembali");
     }
 
     public static int GetInput()
@@ -101,6 +155,12 @@ public static class Menu
         }
 
         return -1;
+    }
+
+    public static string GetTextInput(string label)
+    {
+        Console.Write(label);
+        return Console.ReadLine() ?? string.Empty;
     }
 
     public static void ShowMessage(string message)

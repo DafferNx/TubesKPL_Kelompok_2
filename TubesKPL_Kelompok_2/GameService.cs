@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class GameService
 {
@@ -23,41 +25,54 @@ public class GameService
         if (game == null) return "Game tidak ditemukan";
         if (game.Status == GameStatus.Owned) return "Game sudah dimiliki";
         if (game.Status == GameStatus.Cart) return "Game sudah ada di cart";
+        if (game.Status == GameStatus.PendingRefund) return "Game sedang menunggu proses refund";
 
         return ChangeGameStatus(game, GameAction.AddToCart, "Game berhasil ditambahkan ke cart");
     }
 
-    public string buyGame(Game game)
+    public string buyGame(Game game, Wallet wallet)
     {
         if (game == null) return "Game tidak ditemukan";
+        if (wallet == null) return "Wallet tidak ditemukan";
         if (game.Status == GameStatus.Owned) return "Game sudah dimiliki";
+        if (game.Status == GameStatus.PendingRefund) return "Game sedang menunggu proses refund";
+
+        if (!wallet.DeductBalance(game.Price, out string walletMessage))
+            return walletMessage;
 
         GameAction action = game.Status == GameStatus.Cart
             ? GameAction.Checkout
             : GameAction.BuyDirect;
 
-        return ChangeGameStatus(game, action, "Game berhasil dibeli");
+        string stateMessage = ChangeGameStatus(game, action, "Game berhasil dibeli");
+        return $"{stateMessage}. {walletMessage}";
     }
 
-    public string checkoutCart()
+    public string checkoutCart(Wallet wallet)
     {
+        if (wallet == null) return "Wallet tidak ditemukan";
+
         var cartGames = games.Where(game => game.Status == GameStatus.Cart).ToList();
         if (cartGames.Count == 0) return "Tidak ada game di cart untuk checkout";
+
+        int totalPrice = cartGames.Sum(game => game.Price);
+        if (!wallet.DeductBalance(totalPrice, out string walletMessage))
+            return walletMessage;
 
         foreach (var game in cartGames)
         {
             game.Status = gameStateMachine.Move(game.Status, GameAction.Checkout);
         }
 
-        return "Semua game di cart berhasil dibeli";
+        return $"Semua game di cart berhasil dibeli. {walletMessage}";
     }
 
-    public string refundGame(Game game)
+    public string requestRefund(Game game)
     {
         if (game == null) return "Game tidak ditemukan";
-        if (game.Status != GameStatus.Owned) return "Game belum dimiliki";
+        if (game.Status != GameStatus.Owned) return "Refund hanya bisa diajukan untuk game yang sudah dimiliki";
 
-        return ChangeGameStatus(game, GameAction.Refund, "Game berhasil direfund");
+        return ChangeGameStatus(game, GameAction.RequestRefund, "Request refund berhasil diajukan dan menunggu persetujuan admin");
     }
 
     public List<Game> getCartGames()
@@ -67,7 +82,7 @@ public class GameService
 
     public List<Game> getOwnedGames()
     {
-        return games.Where(game => game.Status == GameStatus.Owned).ToList();
+        return games.Where(game => game.Status == GameStatus.Owned || game.Status == GameStatus.PendingRefund).ToList();
     }
 
     public int getTotalCartPrice()
