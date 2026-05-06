@@ -1,165 +1,177 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 
 class Program
 {
+    private enum Page
+    {
+        Store,
+        Detail,
+        Cart,
+        Library,
+        LibraryDetail
+    }
+
     static void Main()
     {
-        Console.WriteLine("=== STEAM ===");
+        Console.WriteLine("=== SETIM ===");
 
         var repo = new Repository<Game>();
         var games = repo.Load("games.json");
+        GameService service = new GameService(games);
 
-        Console.WriteLine($"Jumlah game berhasil dimuat: {games.Count}");
-
-        // but ngeload config nya (workflow.json) - rang
-        State startState = State.STORE;
-
-        if (File.Exists("workflow.json"))
-        {
-            string json = File.ReadAllText("workflow.json");
-            var config = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-
-            if (config != null && config.ContainsKey("initialState"))
-            {
-                startState = Enum.Parse<State>(config["initialState"]);
-            }
-        }
-        // FSM TABLE (Table-driven) - rang
-        var table = new Dictionary<(State, Input), State>
-        {
-            {(State.STORE, Input.VIEW_DETAIL), State.DETAIL},
-
-            {(State.DETAIL, Input.ADD_TO_CART), State.CART},
-            {(State.DETAIL, Input.BUY_DIRECT), State.LIBRARY},
-            {(State.DETAIL, Input.BACK), State.STORE},
-
-            {(State.CART, Input.BUY_CART), State.LIBRARY},
-            {(State.CART, Input.BACK), State.STORE},
-
-            {(State.LIBRARY, Input.REFUND), State.LIBRARY},
-            {(State.LIBRARY, Input.BACK), State.STORE}
-        };
-        // ini looping buat jalani semuanya
-        var fsm = new StateMachine(startState, table);
-
-        Game selectedGame = null;
+        Page currentPage = Page.Store;
+        Game? selectedGame = null;
 
         while (true)
         {
-            Console.WriteLine("\n=================================");
-            Console.WriteLine($"Current State: {fsm.CurrentState}");
-            Console.WriteLine("=================================");
-
-            // ini adalah menunya tapi berdasarkan state - rang
-            switch (fsm.CurrentState)
+            switch (currentPage)
             {
-                case State.STORE:
-                    Console.WriteLine("STORE MENU");
+                case Page.Store:
+                    Menu.ShowStore(games);
+                    int storeInput = Menu.GetInput();
 
-                    foreach (var game in games)
+                    if (storeInput == 0)
+                        return;
+
+                    if (storeInput >= 1 && storeInput <= 10)
                     {
-                        Console.WriteLine($"{game.Id}. {game.Name} - {game.Price}");
+                        try
+                        {
+                            selectedGame = service.getGameById(storeInput);
+                            currentPage = Page.Detail;
+                        }
+                        catch (Exception ex)
+                        {
+                            Menu.ShowMessage(ex.Message);
+                        }
                     }
-
-                    Console.WriteLine("0. Exit");
-                    break;
-
-                case State.DETAIL:
-                    Console.WriteLine("DETAIL GAME");
-
-                    if (selectedGame != null)
+                    else if (storeInput == 11)
                     {
-                        Console.WriteLine($"Nama  : {selectedGame.Name}");
-                        Console.WriteLine($"Harga : {selectedGame.Price}");
-                        Console.WriteLine($"Status: {selectedGame.Status}");
+                        currentPage = Page.Library;
                     }
-
-                    Console.WriteLine("\n1. Add to Cart");
-                    Console.WriteLine("2. Buy Direct");
-                    Console.WriteLine("3. Back to Store");
-                    break;
-
-                case State.CART:
-                    Console.WriteLine("CART MENU");
-                    Console.WriteLine("1. Buy All Cart");
-                    Console.WriteLine("2. Back to Store");
-                    break;
-
-                case State.LIBRARY:
-                    Console.WriteLine("LIBRARY MENU");
-                    Console.WriteLine("1. Refund Game");
-                    Console.WriteLine("2. Back to Store");
-                    break;
-            }
-
-            Console.Write("\nInput: ");
-            int choice;
-
-            if (!int.TryParse(Console.ReadLine(), out choice))
-                continue;
-
-            if (choice == 0)
-                break;
-
-            Input input;
-
-            // gunanya: mapping input sesuai state - rang
-            switch (fsm.CurrentState)
-            {
-                case State.STORE:
-                    var game = games.Find(g => g.Id == choice);
-
-                    if (game != null)
+                    else if (storeInput == 12)
                     {
-                        selectedGame = game;
-                        input = Input.VIEW_DETAIL;
+                        currentPage = Page.Cart;
                     }
                     else
                     {
-                        Console.WriteLine("Game tidak valid");
-                        input = Input.BACK;
+                        Menu.ShowMessage("Input tidak valid");
                     }
                     break;
 
-                case State.DETAIL:
-                    input = choice switch
+                case Page.Detail:
+                    if (selectedGame == null)
                     {
-                        1 => Input.ADD_TO_CART,
-                        2 => Input.BUY_DIRECT,
-                        3 => Input.BACK,
-                        _ => Input.BACK
-                    };
+                        currentPage = Page.Store;
+                        break;
+                    }
+
+                    Menu.ShowGameDetail(selectedGame);
+                    int detailInput = Menu.GetInput();
+
+                    if (detailInput == 1)
+                    {
+                        string message = service.buyGame(selectedGame);
+                        Menu.ShowMessage(message);
+                        currentPage = Page.Library;
+                    }
+                    else if (detailInput == 2)
+                    {
+                        string message = service.addToCart(selectedGame);
+                        Menu.ShowMessage(message);
+                        currentPage = Page.Cart;
+                    }
+                    else if (detailInput == 3)
+                    {
+                        currentPage = Page.Store;
+                    }
+                    else
+                    {
+                        Menu.ShowMessage("Input tidak valid");
+                    }
                     break;
 
-                case State.CART:
-                    input = choice switch
+                case Page.Cart:
+                    var cartGames = service.getCartGames();
+                    int totalPrice = service.getTotalCartPrice();
+
+                    Menu.ShowCart(cartGames, totalPrice);
+                    int cartInput = Menu.GetInput();
+
+                    if (cartInput == 1)
                     {
-                        1 => Input.BUY_CART,
-                        2 => Input.BACK,
-                        _ => Input.BACK
-                    };
+                        string message = service.checkoutCart();
+                        Menu.ShowMessage(message);
+                        currentPage = Page.Library;
+                    }
+                    else if (cartInput == 2)
+                    {
+                        currentPage = Page.Store;
+                    }
+                    else
+                    {
+                        Menu.ShowMessage("Input tidak valid");
+                    }
                     break;
 
-                case State.LIBRARY:
-                    input = choice switch
+                case Page.Library:
+                    var ownedGames = service.getOwnedGames();
+                    Menu.ShowLibrary(ownedGames);
+                    int libraryInput = Menu.GetInput();
+
+                    if (libraryInput == 0)
                     {
-                        1 => Input.REFUND,
-                        2 => Input.BACK,
-                        _ => Input.BACK
-                    };
+                        currentPage = Page.Store;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            selectedGame = service.getGameById(libraryInput);
+
+                            if (selectedGame.Status != GameStatus.Owned)
+                            {
+                                Menu.ShowMessage("Game tidak ada di library");
+                            }
+                            else
+                            {
+                                currentPage = Page.LibraryDetail;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Menu.ShowMessage(ex.Message);
+                        }
+                    }
                     break;
 
-                default:
-                    input = Input.BACK;
+                case Page.LibraryDetail:
+                    if (selectedGame == null)
+                    {
+                        currentPage = Page.Library;
+                        break;
+                    }
+
+                    Menu.ShowLibraryDetail(selectedGame);
+                    int libraryDetailInput = Menu.GetInput();
+
+                    if (libraryDetailInput == 1)
+                    {
+                        currentPage = Page.Library;
+                    }
+                    else if (libraryDetailInput == 2)
+                    {
+                        string message = service.refundGame(selectedGame);
+                        Menu.ShowMessage(message);
+                        currentPage = Page.Library;
+                    }
+                    else
+                    {
+                        Menu.ShowMessage("Input tidak valid");
+                    }
                     break;
             }
-            // buat ngirim ke fsm - rang
-            fsm.Send(input);
         }
-
-        Console.WriteLine("\nProgram selesai.");
     }
 }
