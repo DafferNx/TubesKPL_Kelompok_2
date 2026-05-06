@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 public enum GameAction
@@ -6,7 +6,9 @@ public enum GameAction
     AddToCart,
     BuyDirect,
     Checkout,
-    Refund
+    RequestRefund,
+    ApproveRefund,
+    RejectRefund
 }
 
 public class GameStateMachine
@@ -17,10 +19,12 @@ public class GameStateMachine
     {
         transitions = new Dictionary<(GameStatus, GameAction), GameStatus>
         {
-            {(GameStatus.NotOwned, GameAction.AddToCart), GameStatus.Cart},
-            {(GameStatus.NotOwned, GameAction.BuyDirect), GameStatus.Owned},
-            {(GameStatus.Cart, GameAction.Checkout), GameStatus.Owned},
-            {(GameStatus.Owned, GameAction.Refund), GameStatus.NotOwned}
+            { (GameStatus.NotOwned, GameAction.AddToCart), GameStatus.Cart },
+            { (GameStatus.NotOwned, GameAction.BuyDirect), GameStatus.Owned },
+            { (GameStatus.Cart, GameAction.Checkout), GameStatus.Owned },
+            { (GameStatus.Owned, GameAction.RequestRefund), GameStatus.PendingRefund },
+            { (GameStatus.PendingRefund, GameAction.ApproveRefund), GameStatus.NotOwned },
+            { (GameStatus.PendingRefund, GameAction.RejectRefund), GameStatus.Owned }
         };
     }
 

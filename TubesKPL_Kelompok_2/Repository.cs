@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-class Repository<T>
+public class Repository<T>
 {
     public List<T> Load(string file)
     {
@@ -18,5 +18,15 @@ class Repository<T>
             throw new Exception("Gagal membaca data");
 
         return data;
+    }
+
+    public void Save(string file, List<T> data)
+    {
+        string json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        File.WriteAllText(file, json);
     }
 }
