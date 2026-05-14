@@ -5,21 +5,18 @@ using FluentValidation.Results;
 
 public class AdminService
 {
-    private readonly List<Game> games;
     private readonly GameStateMachine gameStateMachine;
 
-    public AdminService(List<Game> games)
+    public AdminService()
     {
-        this.games = games;
         gameStateMachine = new GameStateMachine();
     }
 
     public string AddGame(string name, int price)
     {
-        int newId = games.Count == 0 ? 1 : games.Max(game => game.Id) + 1;
         Game newGame = new Game
         {
-            Id = newId,
+            Id = 1,
             Name = name.Trim(),
             Price = price,
             Status = GameStatus.NotOwned
@@ -31,14 +28,18 @@ public class AdminService
         if (!result.IsValid)
             return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
 
-        games.Add(newGame);
-
-        return $"Game berhasil ditambahkan dengan ID {newId}";
+        int newId = DatabaseHelper.AddGame(newGame.Name, newGame.Price);
+        return $"Game berhasil ditambahkan ke database dengan ID {newId}";
     }
 
     public List<Game> GetPendingRefundGames()
     {
-        return games.Where(game => game.Status == GameStatus.PendingRefund).ToList();
+        return DatabaseHelper.GetPendingRefundGames();
+    }
+
+    public Game GetPendingRefundGameById(int gameId)
+    {
+        return DatabaseHelper.GetPendingRefundGameByGameId(gameId);
     }
 
     public string ProcessRefund(Game game, bool approve)
@@ -50,8 +51,63 @@ public class AdminService
             return "Game tidak dalam status pending refund";
 
         GameAction action = approve ? GameAction.ApproveRefund : GameAction.RejectRefund;
-        game.Status = gameStateMachine.Move(game.Status, action);
+        GameStatus nextStatus = gameStateMachine.Move(game.Status, action);
+        DatabaseHelper.SetUserGameStatus(game.UserId, game.Id, nextStatus);
+        game.Status = nextStatus;
 
-        return approve ? "Refund disetujui" : "Refund ditolak";
+        if (approve)
+        {
+            DatabaseHelper.AddWalletBalance(game.UserId, game.Price);
+            return $"Refund disetujui. Saldo user dikembalikan sebesar Rp{game.Price}";
+        }
+
+        return "Refund ditolak";
+    }
+
+
+    public string BanWallet(string username)
+    {
+        try
+        {
+            User user = DatabaseHelper.GetUserByUsername(username.Trim());
+
+            if (user.Role == UserRole.Admin)
+                return "Wallet admin tidak bisa dibanned";
+
+            string message = user.Wallet.ChangeState(WalletAction.Ban);
+
+            if (user.Wallet.CurrentState != WalletState.Banned)
+                return message;
+
+            DatabaseHelper.UpdateWallet(user);
+            return $"Wallet user {user.Username} berhasil dibanned";
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
+    public string UnbanWallet(string username)
+    {
+        try
+        {
+            User user = DatabaseHelper.GetUserByUsername(username.Trim());
+
+            if (user.Role == UserRole.Admin)
+                return "Wallet admin tidak perlu di-unban";
+
+            string message = user.Wallet.ChangeState(WalletAction.Unban);
+
+            if (user.Wallet.CurrentState != WalletState.Active)
+                return message;
+
+            DatabaseHelper.UpdateWallet(user);
+            return $"Wallet user {user.Username} berhasil di-unban dan aktif kembali";
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
     }
 }

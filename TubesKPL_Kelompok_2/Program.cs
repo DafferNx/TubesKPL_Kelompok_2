@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 class Program
 {
-    private const string GameFile = "Data/games.json";
-
     private enum Page
     {
         RoleMenu,
@@ -20,15 +18,13 @@ class Program
 
     static void Main()
     {
-        var repo = new Repository<Game>();
-        var games = repo.Load(GameFile);
-        GameService gameService = new GameService(games);
-        AdminService adminService = new AdminService(games);
+        DatabaseHelper.InitializeDatabase();
+
+        GameService gameService = new GameService();
+        AdminService adminService = new AdminService();
 
         Page currentPage = Page.RoleMenu;
         Game? selectedGame = null;
-        User admin = new User("admin", UserRole.Admin);
-        User player = new User("budi", UserRole.User);
         User? currentUser = null;
 
         while (true)
@@ -39,24 +35,29 @@ class Program
             {
                 case Page.RoleMenu:
                     Menu.ShowRoleMenu();
-                    int roleInput = Menu.GetInput();
+                    string username = Menu.GetTextInput("Username (0 untuk exit): ");
 
-                    if (roleInput == 0)
+                    if (username == "0")
                         return;
 
-                    if (roleInput == 1)
+                    string password = Menu.GetTextInput("Password: ");
+
+                    try
                     {
-                        currentUser = player;
-                        currentPage = Page.Store;
+                        currentUser = DatabaseHelper.Login(username, password);
+
+                        if (currentUser.Role == UserRole.Admin)
+                        {
+                            currentPage = Page.AdminMenu;
+                        }
+                        else
+                        {
+                            currentPage = Page.Store;
+                        }
                     }
-                    else if (roleInput == 2)
+                    catch (Exception ex)
                     {
-                        currentUser = admin;
-                        currentPage = Page.AdminMenu;
-                    }
-                    else
-                    {
-                        Menu.ShowMessage("Input tidak valid");
+                        Menu.ShowMessage(ex.Message);
                     }
                     break;
 
@@ -67,7 +68,9 @@ class Program
                         break;
                     }
 
-                    Menu.ShowStore(games, currentUser);
+                    currentUser = DatabaseHelper.GetUserByUsername(currentUser.Username);
+                    List<Game> storeGames = gameService.getAllGames(currentUser.Id);
+                    Menu.ShowStore(storeGames, currentUser);
                     int storeInput = Menu.GetInput();
 
                     if (storeInput == 0)
@@ -89,7 +92,9 @@ class Program
                             }
                             else if (storeInput == 13)
                             {
-                                Menu.ShowMessage(currentUser.Wallet.ChangeState(WalletAction.Activate));
+                                string message = currentUser.Wallet.ChangeState(WalletAction.Activate);
+                                DatabaseHelper.UpdateWallet(currentUser);
+                                Menu.ShowMessage(message);
                             }
                             else if (storeInput == 14)
                             {
@@ -100,12 +105,14 @@ class Program
                                 }
                                 else
                                 {
-                                    Menu.ShowMessage(currentUser.Wallet.TopUp(amount));
+                                    string message = currentUser.Wallet.TopUp(amount);
+                                    DatabaseHelper.UpdateWallet(currentUser);
+                                    Menu.ShowMessage(message);
                                 }
                             }
                             else
                             {
-                                selectedGame = gameService.getGameById(storeInput);
+                                selectedGame = gameService.getGameById(currentUser.Id, storeInput);
                                 currentPage = Page.Detail;
                             }
                         }
@@ -127,20 +134,19 @@ class Program
                         break;
                     }
 
+                    selectedGame = gameService.getGameById(currentUser.Id, selectedGame.Id);
                     Menu.ShowGameDetail(selectedGame);
                     int detailInput = Menu.GetInput();
 
                     if (detailInput == 1)
                     {
-                        string message = gameService.buyGame(selectedGame, currentUser.Wallet);
-                        repo.Save(GameFile, games);
+                        string message = gameService.buyGame(currentUser, selectedGame);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
                     else if (detailInput == 2)
                     {
-                        string message = gameService.addToCart(selectedGame);
-                        repo.Save(GameFile, games);
+                        string message = gameService.addToCart(currentUser.Id, selectedGame);
                         Menu.ShowMessage(message);
                         currentPage = Page.Cart;
                     }
@@ -161,20 +167,41 @@ class Program
                         break;
                     }
 
-                    var cartGames = gameService.getCartGames();
-                    int totalPrice = gameService.getTotalCartPrice();
+                    currentUser = DatabaseHelper.GetUserByUsername(currentUser.Username);
+                    var cartGames = gameService.getCartGames(currentUser.Id);
+                    int totalPrice = gameService.getTotalCartPrice(currentUser.Id);
 
                     Menu.ShowCart(cartGames, totalPrice);
                     int cartInput = Menu.GetInput();
 
                     if (cartInput == 1)
                     {
-                        string message = gameService.checkoutCart(currentUser.Wallet);
-                        repo.Save(GameFile, games);
+                        string message = gameService.checkoutCart(currentUser);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
                     else if (cartInput == 2)
+                    {
+                        string gameIdText = Menu.GetTextInput("ID game yang dihapus dari cart: ");
+                        if (!int.TryParse(gameIdText, out int gameId))
+                        {
+                            Menu.ShowMessage("ID game tidak valid");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                Game cartGame = gameService.getGameById(currentUser.Id, gameId);
+                                string message = gameService.removeFromCart(currentUser.Id, cartGame);
+                                Menu.ShowMessage(message);
+                            }
+                            catch (Exception ex)
+                            {
+                                Menu.ShowMessage(ex.Message);
+                            }
+                        }
+                    }
+                    else if (cartInput == 3)
                     {
                         currentPage = Page.Store;
                     }
@@ -185,7 +212,13 @@ class Program
                     break;
 
                 case Page.Library:
-                    var ownedGames = gameService.getOwnedGames();
+                    if (currentUser == null)
+                    {
+                        currentPage = Page.RoleMenu;
+                        break;
+                    }
+
+                    var ownedGames = gameService.getOwnedGames(currentUser.Id);
                     Menu.ShowLibrary(ownedGames);
                     int libraryInput = Menu.GetInput();
 
@@ -197,7 +230,7 @@ class Program
                     {
                         try
                         {
-                            selectedGame = gameService.getGameById(libraryInput);
+                            selectedGame = gameService.getGameById(currentUser.Id, libraryInput);
 
                             if (selectedGame.Status != GameStatus.Owned && selectedGame.Status != GameStatus.PendingRefund)
                             {
@@ -216,12 +249,13 @@ class Program
                     break;
 
                 case Page.LibraryDetail:
-                    if (selectedGame == null)
+                    if (currentUser == null || selectedGame == null)
                     {
                         currentPage = Page.Library;
                         break;
                     }
 
+                    selectedGame = gameService.getGameById(currentUser.Id, selectedGame.Id);
                     Menu.ShowLibraryDetail(selectedGame);
                     int libraryDetailInput = Menu.GetInput();
 
@@ -231,8 +265,7 @@ class Program
                     }
                     else if (libraryDetailInput == 2)
                     {
-                        string message = gameService.requestRefund(selectedGame);
-                        repo.Save(GameFile, games);
+                        string message = gameService.requestRefund(currentUser.Id, selectedGame);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
@@ -269,13 +302,24 @@ class Program
                         else
                         {
                             string message = adminService.AddGame(name, price);
-                            repo.Save(GameFile, games);
                             Menu.ShowMessage(message);
                         }
                     }
                     else if (adminInput == 2)
                     {
                         currentPage = Page.AdminRefundList;
+                    }
+                    else if (adminInput == 3)
+                    {
+                        string usernameToBan = Menu.GetTextInput("Username user yang wallet-nya diban: ");
+                        string message = adminService.BanWallet(usernameToBan);
+                        Menu.ShowMessage(message);
+                    }
+                    else if (adminInput == 4)
+                    {
+                        string usernameToUnban = Menu.GetTextInput("Username user yang wallet-nya di-unban: ");
+                        string message = adminService.UnbanWallet(usernameToUnban);
+                        Menu.ShowMessage(message);
                     }
                     else
                     {
@@ -296,16 +340,8 @@ class Program
                     {
                         try
                         {
-                            selectedGame = gameService.getGameById(refundListInput);
-
-                            if (selectedGame.Status != GameStatus.PendingRefund)
-                            {
-                                Menu.ShowMessage("Game tidak dalam status pending refund");
-                            }
-                            else
-                            {
-                                currentPage = Page.AdminRefundDecision;
-                            }
+                            selectedGame = adminService.GetPendingRefundGameById(refundListInput);
+                            currentPage = Page.AdminRefundDecision;
                         }
                         catch (Exception ex)
                         {
@@ -332,7 +368,6 @@ class Program
                     {
                         bool approve = refundDecisionInput == 1;
                         string message = adminService.ProcessRefund(selectedGame, approve);
-                        repo.Save(GameFile, games);
                         Menu.ShowMessage(message);
                         currentPage = Page.AdminRefundList;
                     }

@@ -13,6 +13,7 @@ public class Wallet
         { (WalletState.Inactive, WalletAction.Activate), WalletState.Active },
         { (WalletState.Active, WalletAction.Deactivate), WalletState.Inactive },
         { (WalletState.Active, WalletAction.Ban), WalletState.Banned },
+        { (WalletState.Inactive, WalletAction.Ban), WalletState.Banned },
         { (WalletState.Banned, WalletAction.Unban), WalletState.Active }
     };
 
@@ -22,14 +23,18 @@ public class Wallet
         Balance = 0;
     }
 
+    public Wallet(int balance, WalletState state)
+    {
+        Balance = balance;
+        CurrentState = state;
+    }
+
     public string ChangeState(WalletAction action)
     {
         var key = (CurrentState, action);
 
         if (!transitions.TryGetValue(key, out WalletState nextState))
-        {
             return $"Aksi {action} tidak valid untuk wallet {CurrentState}";
-        }
 
         CurrentState = nextState;
         return $"Wallet state berubah menjadi {CurrentState}";
@@ -37,7 +42,10 @@ public class Wallet
 
     public string TopUp(int amount)
     {
-        if (CurrentState != WalletState.Active)
+        if (CurrentState == WalletState.Banned)
+            return "Wallet dibanned dan tidak bisa top up";
+
+        if (CurrentState == WalletState.Inactive)
             return "Wallet harus aktif untuk top up";
 
         WalletValidator validator = new WalletValidator();
@@ -52,7 +60,13 @@ public class Wallet
 
     public bool DeductBalance(int amount, out string message)
     {
-        if (CurrentState != WalletState.Active)
+        if (CurrentState == WalletState.Banned)
+        {
+            message = "Wallet dibanned dan tidak bisa digunakan untuk membeli game";
+            return false;
+        }
+
+        if (CurrentState == WalletState.Inactive)
         {
             message = "Wallet harus aktif untuk membeli game";
             return false;

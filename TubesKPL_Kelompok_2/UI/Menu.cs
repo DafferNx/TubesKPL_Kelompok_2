@@ -5,10 +5,10 @@ public static class Menu
 {
     public static void ShowRoleMenu()
     {
-        Console.WriteLine("=== SETIM ===");
-        Console.WriteLine("1. Masuk sebagai User");
-        Console.WriteLine("2. Masuk sebagai Admin");
-        Console.WriteLine("0. Exit");
+        Console.WriteLine("=== LOGIN SETIM ===");
+        Console.WriteLine("Default user : budi / 123");
+        Console.WriteLine("Default admin: admin / admin");
+        Console.WriteLine();
     }
 
     public static void ShowStore(List<Game> games, User user)
@@ -66,7 +66,8 @@ public static class Menu
 
         Console.WriteLine();
         Console.WriteLine("1. Checkout / Beli semua");
-        Console.WriteLine("2. Kembali ke Store");
+        Console.WriteLine("2. Hapus game dari cart");
+        Console.WriteLine("3. Kembali ke Store");
     }
 
     public static void ShowLibrary(List<Game> ownedGames)
@@ -106,8 +107,10 @@ public static class Menu
     public static void ShowAdminMenu()
     {
         Console.WriteLine("=== ADMIN MENU ===");
-        Console.WriteLine("1. Tambah Game ke JSON");
+        Console.WriteLine("1. Tambah Game ke Database");
         Console.WriteLine("2. Lihat Request Refund");
+        Console.WriteLine("3. Ban Wallet User");
+        Console.WriteLine("4. Unban Wallet User");
         Console.WriteLine("0. Logout");
     }
 
