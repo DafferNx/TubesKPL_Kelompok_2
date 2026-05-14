@@ -8,13 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="Data\games.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
+  </ItemGroup>
 </Project>

@@ -1,19 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 public class Game
 {
-    public int Id {  get; set; }
-    public string Name { get; set; }
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
     public int Price { get; set; }
-    public GameStatus Status { get; set; }
+
+    // Status ini adalah status game untuk user tertentu.
+    // Data master game tetap disimpan di tabel Games.
+    // Status per user disimpan di tabel UserGames.
+    public GameStatus Status { get; set; } = GameStatus.NotOwned;
+
+    // Dipakai saat admin memproses refund dari tabel UserGames.
+    public int UserId { get; set; }
+
+    public Game() { }
 
     public Game(int id, string name, int price)
     {
         if (id <= 0)
-            throw new Exception("Id Harus lebih dari 0");
-        if (string.IsNullOrEmpty(name))
+            throw new Exception("Id harus lebih dari 0");
+        if (string.IsNullOrWhiteSpace(name))
             throw new Exception("Nama game tidak boleh kosong");
         if (price < 0)
             throw new Exception("Harga tidak boleh negatif");
@@ -22,11 +27,5 @@ public class Game
         Name = name;
         Price = price;
         Status = GameStatus.NotOwned;
-
-        if (Status != GameStatus.NotOwned)
-            throw new Exception("Status awal harus NotOwned");
     }
-
-    public Game() { }
-
 }

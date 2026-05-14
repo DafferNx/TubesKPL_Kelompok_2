@@ -4,70 +4,86 @@ using System.Linq;
 
 public class GameService
 {
-    private readonly List<Game> games;
     private readonly GameStateMachine gameStateMachine;
 
-    public GameService(List<Game> games)
+    public GameService()
     {
-        this.games = games;
         gameStateMachine = new GameStateMachine();
     }
 
-    public Game getGameById(int id)
+    public List<Game> getAllGames(int userId)
     {
-        var game = games.Find(game => game.Id == id);
-        if (game == null) throw new Exception("Game tidak ditemukan");
-        return game;
+        return DatabaseHelper.GetGamesForUser(userId);
     }
 
-    public string addToCart(Game game)
+    public Game getGameById(int userId, int id)
+    {
+        return DatabaseHelper.GetGameForUser(userId, id);
+    }
+
+    public string addToCart(int userId, Game game)
     {
         if (game == null) return "Game tidak ditemukan";
         if (game.Status == GameStatus.Owned) return "Game sudah dimiliki";
         if (game.Status == GameStatus.Cart) return "Game sudah ada di cart";
         if (game.Status == GameStatus.PendingRefund) return "Game sedang menunggu proses refund";
 
-        return ChangeGameStatus(game, GameAction.AddToCart, "Game berhasil ditambahkan ke cart");
+        return ChangeGameStatus(userId, game, GameAction.AddToCart, "Game berhasil ditambahkan ke cart");
     }
 
-    public string buyGame(Game game, Wallet wallet)
+    public string removeFromCart(int userId, Game game)
     {
         if (game == null) return "Game tidak ditemukan";
-        if (wallet == null) return "Wallet tidak ditemukan";
+        if (game.Status != GameStatus.Cart) return "Game tidak ada di cart";
+
+        DatabaseHelper.SetUserGameStatus(userId, game.Id, GameStatus.NotOwned);
+        return "Game berhasil dihapus dari cart";
+    }
+
+    public string buyGame(User user, Game game)
+    {
+        if (user == null) return "User tidak ditemukan";
+        if (game == null) return "Game tidak ditemukan";
+        if (user.Wallet == null) return "Wallet tidak ditemukan";
         if (game.Status == GameStatus.Owned) return "Game sudah dimiliki";
         if (game.Status == GameStatus.PendingRefund) return "Game sedang menunggu proses refund";
 
-        if (!wallet.DeductBalance(game.Price, out string walletMessage))
+        if (!user.Wallet.DeductBalance(game.Price, out string walletMessage))
             return walletMessage;
 
         GameAction action = game.Status == GameStatus.Cart
             ? GameAction.Checkout
             : GameAction.BuyDirect;
 
-        string stateMessage = ChangeGameStatus(game, action, "Game berhasil dibeli");
+        string stateMessage = ChangeGameStatus(user.Id, game, action, "Game berhasil dibeli");
+        DatabaseHelper.UpdateWallet(user);
+
         return $"{stateMessage}. {walletMessage}";
     }
 
-    public string checkoutCart(Wallet wallet)
+    public string checkoutCart(User user)
     {
-        if (wallet == null) return "Wallet tidak ditemukan";
+        if (user == null) return "User tidak ditemukan";
+        if (user.Wallet == null) return "Wallet tidak ditemukan";
 
-        var cartGames = games.Where(game => game.Status == GameStatus.Cart).ToList();
+        var cartGames = getCartGames(user.Id);
         if (cartGames.Count == 0) return "Tidak ada game di cart untuk checkout";
 
         int totalPrice = cartGames.Sum(game => game.Price);
-        if (!wallet.DeductBalance(totalPrice, out string walletMessage))
+        if (!user.Wallet.DeductBalance(totalPrice, out string walletMessage))
             return walletMessage;
 
         foreach (var game in cartGames)
         {
-            game.Status = gameStateMachine.Move(game.Status, GameAction.Checkout);
+            GameStatus nextStatus = gameStateMachine.Move(game.Status, GameAction.Checkout);
+            DatabaseHelper.SetUserGameStatus(user.Id, game.Id, nextStatus);
         }
 
+        DatabaseHelper.UpdateWallet(user);
         return $"Semua game di cart berhasil dibeli. {walletMessage}";
     }
 
-    public string requestRefund(Game game)
+    public string requestRefund(int userId, Game game)
     {
         RefundValidator validator = new RefundValidator();
         var result = validator.Validate(game);
@@ -75,29 +91,31 @@ public class GameService
         if (!result.IsValid)
             return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
 
-        return ChangeGameStatus(game, GameAction.RequestRefund, "Request refund berhasil diajukan dan menunggu persetujuan admin");
+        return ChangeGameStatus(userId, game, GameAction.RequestRefund, "Request refund berhasil diajukan dan menunggu persetujuan admin");
     }
 
-    public List<Game> getCartGames()
+    public List<Game> getCartGames(int userId)
     {
-        return games.Where(game => game.Status == GameStatus.Cart).ToList();
+        return DatabaseHelper.GetGamesByStatus(userId, GameStatus.Cart);
     }
 
-    public List<Game> getOwnedGames()
+    public List<Game> getOwnedGames(int userId)
     {
-        return games.Where(game => game.Status == GameStatus.Owned || game.Status == GameStatus.PendingRefund).ToList();
+        return DatabaseHelper.GetGamesByStatus(userId, GameStatus.Owned, GameStatus.PendingRefund);
     }
 
-    public int getTotalCartPrice()
+    public int getTotalCartPrice(int userId)
     {
-        return games.Where(game => game.Status == GameStatus.Cart).Sum(game => game.Price);
+        return getCartGames(userId).Sum(game => game.Price);
     }
 
-    private string ChangeGameStatus(Game game, GameAction action, string successMessage)
+    private string ChangeGameStatus(int userId, Game game, GameAction action, string successMessage)
     {
         try
         {
-            game.Status = gameStateMachine.Move(game.Status, action);
+            GameStatus nextStatus = gameStateMachine.Move(game.Status, action);
+            DatabaseHelper.SetUserGameStatus(userId, game.Id, nextStatus);
+            game.Status = nextStatus;
             return successMessage;
         }
         catch (InvalidOperationException ex)
