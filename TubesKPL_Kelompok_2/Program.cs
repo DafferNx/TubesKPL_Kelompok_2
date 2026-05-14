@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 class Program
 {
-    private const string GameFile = "games.json";
+    private const string GameFile = "Data/games.json";
 
     private enum Page
     {
