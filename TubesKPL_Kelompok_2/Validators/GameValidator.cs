@@ -13,7 +13,7 @@ public class GameValidator : AbstractValidator<Game>
             .WithMessage("Nama game tidak boleh kosong");
 
         RuleFor(game => game.Price)
-            .GreaterThanOrEqualTo(0)
-            .WithMessage("Harga game tidak boleh negatif");
+            .GreaterThan(0)
+            .WithMessage("Harga game harus lebih dari 0");
     }
 }

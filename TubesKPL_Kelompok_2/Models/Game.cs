@@ -20,8 +20,8 @@ public class Game
             throw new Exception("Id harus lebih dari 0");
         if (string.IsNullOrWhiteSpace(name))
             throw new Exception("Nama game tidak boleh kosong");
-        if (price < 0)
-            throw new Exception("Harga tidak boleh negatif");
+        if (price <= 0)
+            throw new Exception("Harga harus lebih dari 0");
 
         Id = id;
         Name = name;
