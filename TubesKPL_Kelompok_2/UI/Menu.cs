@@ -14,12 +14,12 @@ public static class Menu
     public static void ShowStore(List<Game> games, User user)
     {
         Console.WriteLine("=== STORE ===");
-        Console.WriteLine($"User: {user.Username} | Wallet: {user.Wallet.CurrentState} | Balance: Rp{user.Wallet.Balance}");
+        Console.WriteLine($"User: {user.Username} | Wallet: {user.Wallet.CurrentState} | Balance: Rp{user.Wallet.Balance:N0}");
         Console.WriteLine();
 
         foreach (var game in games)
         {
-            Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price} [{game.Status}]");
+            Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0} [{game.Status}]");
         }
         
         Console.WriteLine();
@@ -36,7 +36,7 @@ public static class Menu
         Console.WriteLine("=== DETAIL GAME ===");
         Console.WriteLine($"ID     : {game.Id}");
         Console.WriteLine($"Nama   : {game.Name}");
-        Console.WriteLine($"Harga  : Rp{game.Price}");
+        Console.WriteLine($"Harga  : Rp{game.Price:N0}");
         Console.WriteLine($"Status : {game.Status}");
 
         Console.WriteLine();
@@ -57,11 +57,11 @@ public static class Menu
         {
             foreach (var game in cartGames)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price}");
+                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0}");
             }
 
             Console.WriteLine();
-            Console.WriteLine($"Total harga: Rp{totalPrice}");
+            Console.WriteLine($"Total harga: Rp{totalPrice:N0}");
         }
 
         Console.WriteLine();
@@ -82,7 +82,7 @@ public static class Menu
         {
             foreach (var game in ownedGames)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price} [{game.Status}]");
+                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0} [{game.Status}]");
             }
         }
 
@@ -96,7 +96,7 @@ public static class Menu
         Console.WriteLine("=== DETAIL LIBRARY ===");
         Console.WriteLine($"ID     : {game.Id}");
         Console.WriteLine($"Nama   : {game.Name}");
-        Console.WriteLine($"Harga  : Rp{game.Price}");
+        Console.WriteLine($"Harga  : Rp{game.Price:N0}");
         Console.WriteLine($"Status : {game.Status}");
 
         Console.WriteLine();
@@ -108,10 +108,31 @@ public static class Menu
     {
         Console.WriteLine("=== ADMIN MENU ===");
         Console.WriteLine("1. Tambah Game ke Database");
-        Console.WriteLine("2. Lihat Request Refund");
-        Console.WriteLine("3. Ban Wallet User");
-        Console.WriteLine("4. Unban Wallet User");
+        Console.WriteLine("2. Edit Game");
+        Console.WriteLine("3. Hapus Game");
+        Console.WriteLine("4. Lihat Request Refund");
+        Console.WriteLine("5. Ban Wallet User");
+        Console.WriteLine("6. Unban Wallet User");
         Console.WriteLine("0. Logout");
+    }
+
+    public static void ShowAdminGameList(List<Game> games)
+    {
+        Console.WriteLine("=== DAFTAR GAME ===");
+
+        if (games.Count == 0)
+        {
+            Console.WriteLine("Belum ada game di database.");
+        }
+        else
+        {
+            foreach (var game in games)
+            {
+                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0}");
+            }
+        }
+
+        Console.WriteLine();
     }
 
     public static void ShowPendingRefunds(List<Game> pendingRefundGames)
@@ -126,7 +147,7 @@ public static class Menu
         {
             foreach (var game in pendingRefundGames)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price} [{game.Status}]");
+                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0} [{game.Status}]");
             }
         }
 
@@ -140,7 +161,7 @@ public static class Menu
         Console.WriteLine("=== PROSES REFUND ===");
         Console.WriteLine($"ID     : {game.Id}");
         Console.WriteLine($"Nama   : {game.Name}");
-        Console.WriteLine($"Harga  : Rp{game.Price}");
+        Console.WriteLine($"Harga  : Rp{game.Price:N0}");
         Console.WriteLine($"Status : {game.Status}");
         Console.WriteLine();
         Console.WriteLine("1. Approve Refund");

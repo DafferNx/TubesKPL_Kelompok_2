@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TubesKPL_Kelompok_2.Database;
 
 class Program
 {
@@ -18,6 +19,7 @@ class Program
 
     static void Main()
     {
+
         DatabaseHelper.InitializeDatabase();
 
         GameService gameService = new GameService();
@@ -307,15 +309,47 @@ class Program
                     }
                     else if (adminInput == 2)
                     {
-                        currentPage = Page.AdminRefundList;
+                        Menu.ShowAdminGameList(adminService.GetAllGames());
+                        string gameIdText = Menu.GetTextInput("ID game yang diedit: ");
+                        string newName = Menu.GetTextInput("Nama game baru: ");
+                        string newPriceText = Menu.GetTextInput("Harga game baru: ");
+
+                        if (!int.TryParse(gameIdText, out int gameId) || !int.TryParse(newPriceText, out int newPrice))
+                        {
+                            Menu.ShowMessage("ID atau harga tidak valid");
+                        }
+                        else
+                        {
+                            string message = adminService.EditGame(gameId, newName, newPrice);
+                            Menu.ShowMessage(message);
+                        }
                     }
                     else if (adminInput == 3)
+                    {
+                        Menu.ShowAdminGameList(adminService.GetAllGames());
+                        string gameIdText = Menu.GetTextInput("ID game yang dihapus: ");
+
+                        if (!int.TryParse(gameIdText, out int gameId))
+                        {
+                            Menu.ShowMessage("ID game tidak valid");
+                        }
+                        else
+                        {
+                            string message = adminService.DeleteGame(gameId);
+                            Menu.ShowMessage(message);
+                        }
+                    }
+                    else if (adminInput == 4)
+                    {
+                        currentPage = Page.AdminRefundList;
+                    }
+                    else if (adminInput == 5)
                     {
                         string usernameToBan = Menu.GetTextInput("Username user yang wallet-nya diban: ");
                         string message = adminService.BanWallet(usernameToBan);
                         Menu.ShowMessage(message);
                     }
-                    else if (adminInput == 4)
+                    else if (adminInput == 6)
                     {
                         string usernameToUnban = Menu.GetTextInput("Username user yang wallet-nya di-unban: ");
                         string message = adminService.UnbanWallet(usernameToUnban);

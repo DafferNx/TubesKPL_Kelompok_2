@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-
+using TubesKPL_Kelompok_2.Database;
 public class AdminService
 {
     private readonly GameStateMachine gameStateMachine;
@@ -30,6 +30,52 @@ public class AdminService
 
         int newId = DatabaseHelper.AddGame(newGame.Name, newGame.Price);
         return $"Game berhasil ditambahkan ke database dengan ID {newId}";
+    }
+
+    public List<Game> GetAllGames()
+    {
+        return DatabaseHelper.GetAllGames();
+    }
+
+    public string EditGame(int gameId, string name, int price)
+    {
+        try
+        {
+            Game updatedGame = new Game
+            {
+                Id = gameId,
+                Name = name.Trim(),
+                Price = price,
+                Status = GameStatus.NotOwned
+            };
+
+            GameValidator validator = new GameValidator();
+            ValidationResult result = validator.Validate(updatedGame);
+
+            if (!result.IsValid)
+                return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
+
+            DatabaseHelper.UpdateGame(updatedGame.Id, updatedGame.Name, updatedGame.Price);
+            return $"Game dengan ID {gameId} berhasil diubah";
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
+    public string DeleteGame(int gameId)
+    {
+        try
+        {
+            Game game = DatabaseHelper.GetGameById(gameId);
+            DatabaseHelper.DeleteGame(gameId);
+            return $"Game {game.Name} berhasil dihapus";
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
     }
 
     public List<Game> GetPendingRefundGames()

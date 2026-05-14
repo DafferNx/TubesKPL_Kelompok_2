@@ -1,6 +1,8 @@
 using Microsoft.Data.Sqlite;
 using System.IO;
 
+namespace TubesKPL_Kelompok_2.Database;
+
 public static class DatabaseHelper
 {
     private static readonly string DatabasePath = ResolveDatabasePath();
@@ -12,13 +14,22 @@ public static class DatabaseHelper
 
         while (directory != null)
         {
-            string projectFile = Path.Combine(directory.FullName, "TubesKPL_Kelompok_2.csproj");
-
-            if (File.Exists(projectFile))
+            string currentProjectFile = Path.Combine(directory.FullName, "TubesKPL_Kelompok_2.csproj");
+            if (File.Exists(currentProjectFile))
             {
-                string dataDirectory = Path.Combine(directory.FullName, "Data");
-                Directory.CreateDirectory(dataDirectory);
-                return Path.Combine(dataDirectory, "game_store.db");
+                return BuildDatabasePath(directory.FullName);
+            }
+
+            string siblingProjectFile = Path.Combine(
+                directory.FullName,
+                "TubesKPL_Kelompok_2",
+                "TubesKPL_Kelompok_2.csproj"
+            );
+
+            if (File.Exists(siblingProjectFile))
+            {
+                string projectDirectory = Path.Combine(directory.FullName, "TubesKPL_Kelompok_2");
+                return BuildDatabasePath(projectDirectory);
             }
 
             directory = directory.Parent;
@@ -27,6 +38,13 @@ public static class DatabaseHelper
         string fallbackDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
         Directory.CreateDirectory(fallbackDirectory);
         return Path.Combine(fallbackDirectory, "game_store.db");
+    }
+
+    private static string BuildDatabasePath(string projectDirectory)
+    {
+        string dataDirectory = Path.Combine(projectDirectory, "Data");
+        Directory.CreateDirectory(dataDirectory);
+        return Path.Combine(dataDirectory, "game_store.db");
     }
 
     public static void InitializeDatabase()
@@ -70,6 +88,192 @@ public static class DatabaseHelper
             );");
 
         SeedDefaultData(connection);
+    }
+
+    public static void ResetDatabase()
+    {
+        if (File.Exists(DatabasePath))
+        {
+            File.Delete(DatabasePath);
+        }
+
+        InitializeDatabase();
+    }
+
+    public static List<Game> GetAllGames()
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+        SELECT Id, Name, Price
+        FROM Games
+        ORDER BY Id;";
+
+        using var reader = command.ExecuteReader();
+        var games = new List<Game>();
+
+        while (reader.Read())
+        {
+            games.Add(new Game
+            {
+                Id = reader.GetInt32(0),
+                Name = reader.GetString(1),
+                Price = reader.GetInt32(2),
+                Status = GameStatus.NotOwned
+            });
+        }
+
+        return games;
+    }
+
+
+    public static Game GetGameById(int gameId)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT Id, Name, Price
+            FROM Games
+            WHERE Id = $gameId;";
+        command.Parameters.AddWithValue("$gameId", gameId);
+
+        using var reader = command.ExecuteReader();
+        if (!reader.Read())
+            throw new Exception("Game tidak ditemukan");
+
+        return new Game
+        {
+            Id = reader.GetInt32(0),
+            Name = reader.GetString(1),
+            Price = reader.GetInt32(2),
+            Status = GameStatus.NotOwned
+        };
+    }
+
+    public static void UpdateGame(int gameId, string name, int price)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            UPDATE Games
+            SET Name = $name, Price = $price
+            WHERE Id = $gameId;";
+        command.Parameters.AddWithValue("$gameId", gameId);
+        command.Parameters.AddWithValue("$name", name);
+        command.Parameters.AddWithValue("$price", price);
+
+        int affectedRows = command.ExecuteNonQuery();
+        if (affectedRows == 0)
+            throw new Exception("Game tidak ditemukan");
+    }
+
+    public static void DeleteGame(int gameId)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        using var transaction = connection.BeginTransaction();
+
+        using var deleteUserGamesCommand = connection.CreateCommand();
+        deleteUserGamesCommand.Transaction = transaction;
+        deleteUserGamesCommand.CommandText = @"
+            DELETE FROM UserGames
+            WHERE GameId = $gameId;";
+        deleteUserGamesCommand.Parameters.AddWithValue("$gameId", gameId);
+        deleteUserGamesCommand.ExecuteNonQuery();
+
+        using var deleteGameCommand = connection.CreateCommand();
+        deleteGameCommand.Transaction = transaction;
+        deleteGameCommand.CommandText = @"
+            DELETE FROM Games
+            WHERE Id = $gameId;";
+        deleteGameCommand.Parameters.AddWithValue("$gameId", gameId);
+
+        int affectedRows = deleteGameCommand.ExecuteNonQuery();
+        if (affectedRows == 0)
+        {
+            transaction.Rollback();
+            throw new Exception("Game tidak ditemukan");
+        }
+
+        transaction.Commit();
+    }
+
+    public static void UpdateUserGameState(int userId, int gameId, string state)
+    {
+        if (!Enum.TryParse<GameStatus>(state, out var parsedState))
+            throw new Exception("Status game tidak valid");
+
+        SetUserGameStatus(userId, gameId, parsedState);
+    }
+
+    public static void UpdateWalletState(int userId, string state)
+    {
+        if (!Enum.TryParse<WalletState>(state, out var parsedState))
+            throw new Exception("Status wallet tidak valid");
+
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+        UPDATE Wallets
+        SET State = $state
+        WHERE UserId = $userId;";
+        command.Parameters.AddWithValue("$state", parsedState.ToString());
+        command.Parameters.AddWithValue("$userId", userId);
+
+        int affectedRows = command.ExecuteNonQuery();
+        if (affectedRows == 0)
+            throw new Exception("Wallet user tidak ditemukan");
+    }
+
+    public static void ApproveRefund(int userId, int gameId)
+    {
+        Game game = GetGameForUser(userId, gameId);
+
+        if (game.Status != GameStatus.PendingRefund)
+            throw new Exception("Game tidak dalam status pending refund");
+
+        SetUserGameStatus(userId, gameId, GameStatus.NotOwned);
+        AddWalletBalance(userId, game.Price);
+    }
+
+    public static void RejectRefund(int userId, int gameId)
+    {
+        Game game = GetGameForUser(userId, gameId);
+
+        if (game.Status != GameStatus.PendingRefund)
+            throw new Exception("Game tidak dalam status pending refund");
+
+        SetUserGameStatus(userId, gameId, GameStatus.Owned);
+    }
+
+    public static List<User> GetAllUsers()
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+        SELECT u.Id, u.Username, u.Password, u.Role, w.Balance, w.State
+        FROM Users u
+        INNER JOIN Wallets w ON w.UserId = u.Id
+        ORDER BY u.Id;";
+
+        using var reader = command.ExecuteReader();
+        var users = new List<User>();
+
+        while (reader.Read())
+            users.Add(MapUser(reader));
+
+        return users;
     }
 
     public static User GetUserByUsername(string username)
