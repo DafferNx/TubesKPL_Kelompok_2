@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using API.DataObjects;
-using TubesKPL_Kelompok_2.Database;
 
 namespace API.Controllers
 {
@@ -8,6 +7,8 @@ namespace API.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
+        private readonly AuthService authService = new AuthService();
+
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
@@ -16,7 +17,7 @@ namespace API.Controllers
 
             try
             {
-                var user = DatabaseHelper.Login(request.Username.Trim(), request.Password);
+                var user = authService.Login(request.Username.Trim(), request.Password);
                 return Ok(user);
             }
             catch (Exception ex)

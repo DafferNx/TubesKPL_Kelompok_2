@@ -1,6 +1,5 @@
-﻿using API.DataObjects;
+using API.DataObjects;
 using Microsoft.AspNetCore.Mvc;
-using TubesKPL_Kelompok_2.Database;
 
 namespace API.Controllers
 {
@@ -13,10 +12,13 @@ namespace API.Controllers
         [HttpGet("{userId}")]
         public IActionResult GetUserGames(int userId)
         {
+            if (userId <= 0)
+                return BadRequest("UserId tidak valid.");
+
             try
             {
-                DatabaseHelper.GetUserById(userId);
-                return Ok(DatabaseHelper.GetGamesForUser(userId));
+                var games = gameService.getAllGames(userId);
+                return Ok(games);
             }
             catch (Exception ex)
             {
@@ -27,10 +29,12 @@ namespace API.Controllers
         [HttpPost("add-to-cart")]
         public IActionResult AddToCart([FromBody] UserGameRequest request)
         {
+            if (request.UserId <= 0 || request.GameId <= 0)
+                return BadRequest("UserId dan GameId harus valid.");
+
             try
             {
-                var game = DatabaseHelper.GetGameForUser(request.UserId, request.GameId);
-                string message = gameService.addToCart(request.UserId, game);
+                string message = gameService.addToCart(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)
@@ -42,10 +46,12 @@ namespace API.Controllers
         [HttpPost("remove-from-cart")]
         public IActionResult RemoveFromCart([FromBody] UserGameRequest request)
         {
+            if (request.UserId <= 0 || request.GameId <= 0)
+                return BadRequest("UserId dan GameId harus valid.");
+
             try
             {
-                var game = DatabaseHelper.GetGameForUser(request.UserId, request.GameId);
-                string message = gameService.removeFromCart(request.UserId, game);
+                string message = gameService.removeFromCart(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)
@@ -57,11 +63,12 @@ namespace API.Controllers
         [HttpPost("buy")]
         public IActionResult Buy([FromBody] UserGameRequest request)
         {
+            if (request.UserId <= 0 || request.GameId <= 0)
+                return BadRequest("UserId dan GameId harus valid.");
+
             try
             {
-                var user = DatabaseHelper.GetUserById(request.UserId);
-                var game = DatabaseHelper.GetGameForUser(request.UserId, request.GameId);
-                string message = gameService.buyGame(user, game);
+                string message = gameService.buyGame(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)
@@ -73,10 +80,12 @@ namespace API.Controllers
         [HttpPost("checkout/{userId}")]
         public IActionResult Checkout(int userId)
         {
+            if (userId <= 0)
+                return BadRequest("UserId tidak valid.");
+
             try
             {
-                var user = DatabaseHelper.GetUserById(userId);
-                string message = gameService.checkoutCart(user);
+                string message = gameService.checkoutCart(userId);
                 return Ok(message);
             }
             catch (Exception ex)
@@ -88,10 +97,12 @@ namespace API.Controllers
         [HttpPost("request-refund")]
         public IActionResult RequestRefund([FromBody] UserGameRequest request)
         {
+            if (request.UserId <= 0 || request.GameId <= 0)
+                return BadRequest("UserId dan GameId harus valid.");
+
             try
             {
-                var game = DatabaseHelper.GetGameForUser(request.UserId, request.GameId);
-                string message = gameService.requestRefund(request.UserId, game);
+                string message = gameService.requestRefund(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)

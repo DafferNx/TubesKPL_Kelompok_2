@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using API.DataObjects;
-using TubesKPL_Kelompok_2.Database;
 
 namespace API.Controllers
 {
@@ -8,10 +7,12 @@ namespace API.Controllers
     [Route("api/admin")]
     public class AdminController : ControllerBase
     {
+        private readonly AdminService adminService = new AdminService();
+
         [HttpGet("games")]
         public IActionResult GetGames()
         {
-            return Ok(DatabaseHelper.GetAllGames());
+            return Ok(adminService.GetAllGames());
         }
 
         [HttpGet("games/{id}")]
@@ -22,7 +23,7 @@ namespace API.Controllers
 
             try
             {
-                return Ok(DatabaseHelper.GetGameById(id));
+                return Ok(adminService.GetGameById(id));
             }
             catch (Exception ex)
             {
@@ -33,7 +34,7 @@ namespace API.Controllers
         [HttpGet("users")]
         public IActionResult GetUsers()
         {
-            return Ok(DatabaseHelper.GetAllUsers());
+            return Ok(adminService.GetAllUsers());
         }
 
         [HttpPost("games")]
@@ -45,13 +46,8 @@ namespace API.Controllers
             if (request.Price <= 0)
                 return BadRequest("Harga game harus lebih dari 0.");
 
-            int id = DatabaseHelper.AddGame(request.Title.Trim(), request.Price);
-
-            return Ok(new
-            {
-                message = "Game berhasil ditambahkan oleh admin.",
-                gameId = id
-            });
+            string result = adminService.AddGame(request.Title.Trim(), request.Price);
+            return Ok(new { message = result });
         }
 
         [HttpPut("games/{id}")]
@@ -68,8 +64,8 @@ namespace API.Controllers
 
             try
             {
-                DatabaseHelper.UpdateGame(id, request.Title.Trim(), request.Price);
-                return Ok("Game berhasil diubah oleh admin.");
+                string result = adminService.EditGame(id, request.Title.Trim(), request.Price);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -85,8 +81,8 @@ namespace API.Controllers
 
             try
             {
-                DatabaseHelper.DeleteGame(id);
-                return Ok("Game berhasil dihapus oleh admin.");
+                string result = adminService.DeleteGame(id);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -97,16 +93,19 @@ namespace API.Controllers
         [HttpGet("pending-refunds")]
         public IActionResult GetPendingRefunds()
         {
-            return Ok(DatabaseHelper.GetPendingRefundGames());
+            return Ok(adminService.GetPendingRefundGames());
         }
 
         [HttpPost("approve-refund")]
         public IActionResult ApproveRefund([FromBody] UserGameRequest request)
         {
+            if (request.UserId <= 0 || request.GameId <= 0)
+                return BadRequest("UserId dan GameId harus valid.");
+
             try
             {
-                DatabaseHelper.ApproveRefund(request.UserId, request.GameId);
-                return Ok("Refund disetujui dan saldo user dikembalikan.");
+                string result = adminService.ProcessRefund(request.UserId, request.GameId, approve: true);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -117,10 +116,13 @@ namespace API.Controllers
         [HttpPost("reject-refund")]
         public IActionResult RejectRefund([FromBody] UserGameRequest request)
         {
+            if (request.UserId <= 0 || request.GameId <= 0)
+                return BadRequest("UserId dan GameId harus valid.");
+
             try
             {
-                DatabaseHelper.RejectRefund(request.UserId, request.GameId);
-                return Ok("Refund ditolak.");
+                string result = adminService.ProcessRefund(request.UserId, request.GameId, approve: false);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -131,14 +133,13 @@ namespace API.Controllers
         [HttpPost("ban-wallet/{userId}")]
         public IActionResult BanWallet(int userId)
         {
+            if (userId <= 0)
+                return BadRequest("UserId tidak valid.");
+
             try
             {
-                var user = DatabaseHelper.GetUserById(userId);
-                if (user.Role == UserRole.Admin)
-                    return BadRequest("Wallet admin tidak bisa dibanned.");
-
-                DatabaseHelper.UpdateWalletState(userId, "Banned");
-                return Ok("Wallet berhasil dibanned.");
+                string result = adminService.BanWallet(userId);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -149,14 +150,13 @@ namespace API.Controllers
         [HttpPost("unban-wallet/{userId}")]
         public IActionResult UnbanWallet(int userId)
         {
+            if (userId <= 0)
+                return BadRequest("UserId tidak valid.");
+
             try
             {
-                var user = DatabaseHelper.GetUserById(userId);
-                if (user.Role == UserRole.Admin)
-                    return BadRequest("Wallet admin tidak perlu di-unban.");
-
-                DatabaseHelper.UpdateWalletState(userId, "Active");
-                return Ok("Wallet berhasil diaktifkan kembali.");
+                string result = adminService.UnbanWallet(userId);
+                return Ok(result);
             }
             catch (Exception ex)
             {

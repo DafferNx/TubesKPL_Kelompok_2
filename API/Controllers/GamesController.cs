@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TubesKPL_Kelompok_2.Database;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
@@ -7,10 +6,12 @@ namespace API.Controllers
     [Route("api/games")]
     public class GamesController : ControllerBase
     {
+        private readonly AdminService adminService = new AdminService();
+
         [HttpGet]
         public IActionResult GetGames()
         {
-            return Ok(DatabaseHelper.GetAllGames());
+            return Ok(adminService.GetAllGames());
         }
 
         [HttpGet("{id}")]
@@ -21,7 +22,7 @@ namespace API.Controllers
 
             try
             {
-                return Ok(DatabaseHelper.GetGameById(id));
+                return Ok(adminService.GetGameById(id));
             }
             catch (Exception ex)
             {
