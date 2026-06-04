@@ -1,8 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Libraries;
 
 public static class Menu
 {
+    // Helper: format angka sesuai currency aktif dari RuntimeConfig
+    private static string FormatMoney(int amount)
+    {
+        return CurrencyConverter.Format(amount, RuntimeConfig.Currency);
+    }
+
     public static void ShowRoleMenu()
     {
         Console.WriteLine("=== LOGIN SETIM ===");
@@ -14,18 +21,25 @@ public static class Menu
     public static void ShowStore(List<Game> games, User user)
     {
         Console.WriteLine("=== STORE ===");
-        Console.WriteLine($"User: {user.Username} | Wallet: {user.Wallet.CurrentState} | Balance: Rp{user.Wallet.Balance:N0}");
+        Console.WriteLine($"User: {user.Username} | Wallet: {user.Wallet.CurrentState} | Balance: {FormatMoney(user.Wallet.Balance)}");
+        Console.WriteLine($"Currency aktif: {RuntimeConfig.Currency}");
         Console.WriteLine();
 
         foreach (var game in games)
         {
-            Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0} [{game.Status}]");
+            Console.WriteLine($"{game.Id}. {game.Name} - {FormatMoney(game.Price)} [{game.Status}]");
         }
-        
+
         Console.WriteLine();
         Console.WriteLine("11. Library");
         Console.WriteLine("12. Cart");
-        Console.WriteLine("13. Aktifkan Wallet");
+
+        // Tampilkan opsi wallet sesuai state saat ini — Table-driven construction
+        string walletToggleLabel = user.Wallet.CurrentState == WalletState.Active
+            ? "13. Nonaktifkan Wallet"
+            : "13. Aktifkan Wallet";
+        Console.WriteLine(walletToggleLabel);
+
         Console.WriteLine("14. Top Up Wallet");
         Console.WriteLine("0. Logout");
         Console.WriteLine("Pilih nomor untuk lihat detail game / berpindah halaman");
@@ -36,7 +50,7 @@ public static class Menu
         Console.WriteLine("=== DETAIL GAME ===");
         Console.WriteLine($"ID     : {game.Id}");
         Console.WriteLine($"Nama   : {game.Name}");
-        Console.WriteLine($"Harga  : Rp{game.Price:N0}");
+        Console.WriteLine($"Harga  : {FormatMoney(game.Price)}");
         Console.WriteLine($"Status : {game.Status}");
 
         Console.WriteLine();
@@ -57,11 +71,11 @@ public static class Menu
         {
             foreach (var game in cartGames)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0}");
+                Console.WriteLine($"{game.Id}. {game.Name} - {FormatMoney(game.Price)}");
             }
 
             Console.WriteLine();
-            Console.WriteLine($"Total harga: Rp{totalPrice:N0}");
+            Console.WriteLine($"Total harga: {FormatMoney(totalPrice)}");
         }
 
         Console.WriteLine();
@@ -82,7 +96,7 @@ public static class Menu
         {
             foreach (var game in ownedGames)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0} [{game.Status}]");
+                Console.WriteLine($"{game.Id}. {game.Name} - {FormatMoney(game.Price)} [{game.Status}]");
             }
         }
 
@@ -96,7 +110,7 @@ public static class Menu
         Console.WriteLine("=== DETAIL LIBRARY ===");
         Console.WriteLine($"ID     : {game.Id}");
         Console.WriteLine($"Nama   : {game.Name}");
-        Console.WriteLine($"Harga  : Rp{game.Price:N0}");
+        Console.WriteLine($"Harga  : {FormatMoney(game.Price)}");
         Console.WriteLine($"Status : {game.Status}");
 
         Console.WriteLine();
@@ -128,7 +142,7 @@ public static class Menu
         {
             foreach (var game in games)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0}");
+                Console.WriteLine($"{game.Id}. {game.Name} - {FormatMoney(game.Price)}");
             }
         }
 
@@ -147,7 +161,7 @@ public static class Menu
         {
             foreach (var game in pendingRefundGames)
             {
-                Console.WriteLine($"{game.Id}. {game.Name} - Rp{game.Price:N0} [{game.Status}]");
+                Console.WriteLine($"{game.Id}. {game.Name} - {FormatMoney(game.Price)} [{game.Status}]");
             }
         }
 
@@ -161,7 +175,7 @@ public static class Menu
         Console.WriteLine("=== PROSES REFUND ===");
         Console.WriteLine($"ID     : {game.Id}");
         Console.WriteLine($"Nama   : {game.Name}");
-        Console.WriteLine($"Harga  : Rp{game.Price:N0}");
+        Console.WriteLine($"Harga  : {FormatMoney(game.Price)}");
         Console.WriteLine($"Status : {game.Status}");
         Console.WriteLine();
         Console.WriteLine("1. Approve Refund");

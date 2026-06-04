@@ -2,4 +2,5 @@
   <Project Path="API/API.csproj" Id="fb8e7636-235b-402e-9f35-dc679e863de8" />
   <Project Path="CurrencyConverter/Libraries.csproj" Id="757df3ed-9846-44fd-82af-c800d5ad2943" />
   <Project Path="TubesKPL_Kelompok_2/TubesKPL_Kelompok_2.csproj" />
+  <Project Path="UnitTest/UnitTest.csproj" Id="0cdc5746-995e-45e2-b4ab-a2c04a0a998e" />
 </Solution>

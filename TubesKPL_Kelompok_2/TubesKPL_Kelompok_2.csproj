@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,10 +9,18 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
+    <ProjectReference Include="..\CurrencyConverter\Libraries.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Copy currency_config.json ke output directory saat build -->
+    <None Update="Data\currency_config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

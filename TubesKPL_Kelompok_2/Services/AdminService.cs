@@ -2,14 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using TubesKPL_Kelompok_2.Database;
+using TubesKPL_Kelompok_2.Repositories;
+
 public class AdminService
 {
     private readonly GameStateMachine gameStateMachine;
+    private readonly AdminRepository adminRepository;
+    private readonly UserRepository userRepository;
+    private readonly WalletRepository walletRepository;
 
     public AdminService()
     {
         gameStateMachine = new GameStateMachine();
+        adminRepository = new AdminRepository();
+        userRepository = new UserRepository();
+        walletRepository = new WalletRepository();
     }
 
     public string AddGame(string name, int price)
@@ -28,13 +35,18 @@ public class AdminService
         if (!result.IsValid)
             return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
 
-        int newId = DatabaseHelper.AddGame(newGame.Name, newGame.Price);
+        int newId = adminRepository.AddGame(newGame.Name, newGame.Price);
         return $"Game berhasil ditambahkan ke database dengan ID {newId}";
     }
 
     public List<Game> GetAllGames()
     {
-        return DatabaseHelper.GetAllGames();
+        return adminRepository.GetAllGames();
+    }
+
+    public Game GetGameById(int gameId)
+    {
+        return adminRepository.GetGameById(gameId);
     }
 
     public string EditGame(int gameId, string name, int price)
@@ -55,7 +67,7 @@ public class AdminService
             if (!result.IsValid)
                 return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
 
-            DatabaseHelper.UpdateGame(updatedGame.Id, updatedGame.Name, updatedGame.Price);
+            adminRepository.UpdateGame(updatedGame.Id, updatedGame.Name, updatedGame.Price);
             return $"Game dengan ID {gameId} berhasil diubah";
         }
         catch (Exception ex)
@@ -68,8 +80,8 @@ public class AdminService
     {
         try
         {
-            Game game = DatabaseHelper.GetGameById(gameId);
-            DatabaseHelper.DeleteGame(gameId);
+            Game game = adminRepository.GetGameById(gameId);
+            adminRepository.DeleteGame(gameId);
             return $"Game {game.Name} berhasil dihapus";
         }
         catch (Exception ex)
@@ -78,54 +90,53 @@ public class AdminService
         }
     }
 
+    public List<User> GetAllUsers()
+    {
+        return adminRepository.GetAllUsers();
+    }
+
     public List<Game> GetPendingRefundGames()
     {
-        return DatabaseHelper.GetPendingRefundGames();
+        return adminRepository.GetPendingRefundGames();
     }
 
     public Game GetPendingRefundGameById(int gameId)
     {
-        return DatabaseHelper.GetPendingRefundGameByGameId(gameId);
+        return adminRepository.GetPendingRefundGameByGameId(gameId);
     }
 
-    public string ProcessRefund(Game game, bool approve)
-    {
-        if (game == null)
-            return "Game tidak ditemukan";
-
-        if (game.Status != GameStatus.PendingRefund)
-            return "Game tidak dalam status pending refund";
-
-        GameAction action = approve ? GameAction.ApproveRefund : GameAction.RejectRefund;
-        GameStatus nextStatus = gameStateMachine.Move(game.Status, action);
-        DatabaseHelper.SetUserGameStatus(game.UserId, game.Id, nextStatus);
-        game.Status = nextStatus;
-
-        if (approve)
-        {
-            DatabaseHelper.AddWalletBalance(game.UserId, game.Price);
-            return $"Refund disetujui. Saldo user dikembalikan sebesar Rp{game.Price}";
-        }
-
-        return "Refund ditolak";
-    }
-
-
-    public string BanWallet(string username)
+    public string ProcessRefund(int userId, int gameId, bool approve)
     {
         try
         {
-            User user = DatabaseHelper.GetUserByUsername(username.Trim());
+            if (approve)
+            {
+                adminRepository.ApproveRefund(userId, gameId);
+                return "Refund disetujui dan saldo user dikembalikan.";
+            }
+            else
+            {
+                adminRepository.RejectRefund(userId, gameId);
+                return "Refund ditolak.";
+            }
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
+    // Dipakai oleh API (menggunakan userId)
+    public string BanWallet(int userId)
+    {
+        try
+        {
+            User user = userRepository.GetUserById(userId);
 
             if (user.Role == UserRole.Admin)
                 return "Wallet admin tidak bisa dibanned";
 
-            string message = user.Wallet.ChangeState(WalletAction.Ban);
-
-            if (user.Wallet.CurrentState != WalletState.Banned)
-                return message;
-
-            DatabaseHelper.UpdateWallet(user);
+            walletRepository.UpdateWalletState(userId, "Banned");
             return $"Wallet user {user.Username} berhasil dibanned";
         }
         catch (Exception ex)
@@ -134,21 +145,53 @@ public class AdminService
         }
     }
 
-    public string UnbanWallet(string username)
+    public string UnbanWallet(int userId)
     {
         try
         {
-            User user = DatabaseHelper.GetUserByUsername(username.Trim());
+            User user = userRepository.GetUserById(userId);
 
             if (user.Role == UserRole.Admin)
                 return "Wallet admin tidak perlu di-unban";
 
-            string message = user.Wallet.ChangeState(WalletAction.Unban);
+            walletRepository.UpdateWalletState(userId, "Active");
+            return $"Wallet user {user.Username} berhasil di-unban dan aktif kembali";
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+    }
 
-            if (user.Wallet.CurrentState != WalletState.Active)
-                return message;
+    // Dipakai oleh UI konsol (menggunakan username)
+    public string BanWalletByUsername(string username)
+    {
+        try
+        {
+            User user = adminRepository.GetUserByUsername(username.Trim());
 
-            DatabaseHelper.UpdateWallet(user);
+            if (user.Role == UserRole.Admin)
+                return "Wallet admin tidak bisa dibanned";
+
+            walletRepository.UpdateWalletState(user.Id, "Banned");
+            return $"Wallet user {user.Username} berhasil dibanned";
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
+    public string UnbanWalletByUsername(string username)
+    {
+        try
+        {
+            User user = adminRepository.GetUserByUsername(username.Trim());
+
+            if (user.Role == UserRole.Admin)
+                return "Wallet admin tidak perlu di-unban";
+
+            walletRepository.UpdateWalletState(user.Id, "Active");
             return $"Wallet user {user.Username} berhasil di-unban dan aktif kembali";
         }
         catch (Exception ex)

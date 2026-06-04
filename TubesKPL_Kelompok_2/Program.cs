@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using TubesKPL_Kelompok_2.Database;
 
 class Program
@@ -19,11 +20,15 @@ class Program
 
     static void Main()
     {
+        // Muat konfigurasi currency dari JSON sebelum dijalankan
+        string configPath = Path.Combine(AppContext.BaseDirectory, "Data", "currency_config.json");
+        RuntimeConfig.Load(configPath);
 
         DatabaseHelper.InitializeDatabase();
 
         GameService gameService = new GameService();
         AdminService adminService = new AdminService();
+        AuthService authService = new AuthService();
 
         Page currentPage = Page.RoleMenu;
         Game? selectedGame = null;
@@ -46,7 +51,7 @@ class Program
 
                     try
                     {
-                        currentUser = DatabaseHelper.Login(username, password);
+                        currentUser = authService.Login(username, password);
 
                         if (currentUser.Role == UserRole.Admin)
                         {
@@ -70,7 +75,8 @@ class Program
                         break;
                     }
 
-                    currentUser = DatabaseHelper.GetUserByUsername(currentUser.Username);
+                    // Refresh user data melalui AuthService
+                    currentUser = authService.GetUserById(currentUser.Id);
                     List<Game> storeGames = gameService.getAllGames(currentUser.Id);
                     Menu.ShowStore(storeGames, currentUser);
                     int storeInput = Menu.GetInput();
@@ -94,8 +100,13 @@ class Program
                             }
                             else if (storeInput == 13)
                             {
-                                string message = currentUser.Wallet.ChangeState(WalletAction.Activate);
-                                DatabaseHelper.UpdateWallet(currentUser);
+                                // Toggle wallet: Aktifkan jika Inactive, Nonaktifkan jika Active
+                                string message;
+                                if (currentUser.Wallet.CurrentState == WalletState.Active)
+                                    message = authService.DeactivateWallet(currentUser);
+                                else
+                                    message = authService.ActivateWallet(currentUser);
+
                                 Menu.ShowMessage(message);
                             }
                             else if (storeInput == 14)
@@ -107,8 +118,7 @@ class Program
                                 }
                                 else
                                 {
-                                    string message = currentUser.Wallet.TopUp(amount);
-                                    DatabaseHelper.UpdateWallet(currentUser);
+                                    string message = authService.TopUpWallet(currentUser, amount);
                                     Menu.ShowMessage(message);
                                 }
                             }
@@ -142,13 +152,13 @@ class Program
 
                     if (detailInput == 1)
                     {
-                        string message = gameService.buyGame(currentUser, selectedGame);
+                        string message = gameService.buyGame(currentUser.Id, selectedGame.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
                     else if (detailInput == 2)
                     {
-                        string message = gameService.addToCart(currentUser.Id, selectedGame);
+                        string message = gameService.addToCart(currentUser.Id, selectedGame.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Cart;
                     }
@@ -169,7 +179,7 @@ class Program
                         break;
                     }
 
-                    currentUser = DatabaseHelper.GetUserByUsername(currentUser.Username);
+                    currentUser = authService.GetUserById(currentUser.Id);
                     var cartGames = gameService.getCartGames(currentUser.Id);
                     int totalPrice = gameService.getTotalCartPrice(currentUser.Id);
 
@@ -178,7 +188,7 @@ class Program
 
                     if (cartInput == 1)
                     {
-                        string message = gameService.checkoutCart(currentUser);
+                        string message = gameService.checkoutCart(currentUser.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
@@ -193,8 +203,7 @@ class Program
                         {
                             try
                             {
-                                Game cartGame = gameService.getGameById(currentUser.Id, gameId);
-                                string message = gameService.removeFromCart(currentUser.Id, cartGame);
+                                string message = gameService.removeFromCart(currentUser.Id, gameId);
                                 Menu.ShowMessage(message);
                             }
                             catch (Exception ex)
@@ -267,7 +276,7 @@ class Program
                     }
                     else if (libraryDetailInput == 2)
                     {
-                        string message = gameService.requestRefund(currentUser.Id, selectedGame);
+                        string message = gameService.requestRefund(currentUser.Id, selectedGame.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
@@ -346,13 +355,13 @@ class Program
                     else if (adminInput == 5)
                     {
                         string usernameToBan = Menu.GetTextInput("Username user yang wallet-nya diban: ");
-                        string message = adminService.BanWallet(usernameToBan);
+                        string message = adminService.BanWalletByUsername(usernameToBan);
                         Menu.ShowMessage(message);
                     }
                     else if (adminInput == 6)
                     {
                         string usernameToUnban = Menu.GetTextInput("Username user yang wallet-nya di-unban: ");
-                        string message = adminService.UnbanWallet(usernameToUnban);
+                        string message = adminService.UnbanWalletByUsername(usernameToUnban);
                         Menu.ShowMessage(message);
                     }
                     else
@@ -401,7 +410,7 @@ class Program
                     else if (refundDecisionInput == 1 || refundDecisionInput == 2)
                     {
                         bool approve = refundDecisionInput == 1;
-                        string message = adminService.ProcessRefund(selectedGame, approve);
+                        string message = adminService.ProcessRefund(selectedGame.UserId, selectedGame.Id, approve);
                         Menu.ShowMessage(message);
                         currentPage = Page.AdminRefundList;
                     }
