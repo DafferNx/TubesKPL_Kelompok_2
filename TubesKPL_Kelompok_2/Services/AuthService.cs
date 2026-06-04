@@ -29,6 +29,13 @@ public class AuthService
         return message;
     }
 
+    public string DeactivateWallet(User user)
+    {
+        string message = user.Wallet.ChangeState(WalletAction.Deactivate);
+        userRepository.UpdateWallet(user);
+        return message;
+    }
+
     public string TopUpWallet(User user, int amount)
     {
         string message = user.Wallet.TopUp(amount);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using TubesKPL_Kelompok_2.Database;
 
 class Program
@@ -19,6 +20,10 @@ class Program
 
     static void Main()
     {
+        // Muat konfigurasi currency dari JSON sebelum dijalankan
+        string configPath = Path.Combine(AppContext.BaseDirectory, "Data", "currency_config.json");
+        RuntimeConfig.Load(configPath);
+
         DatabaseHelper.InitializeDatabase();
 
         GameService gameService = new GameService();
@@ -95,7 +100,13 @@ class Program
                             }
                             else if (storeInput == 13)
                             {
-                                string message = authService.ActivateWallet(currentUser);
+                                // Toggle wallet: Aktifkan jika Inactive, Nonaktifkan jika Active
+                                string message;
+                                if (currentUser.Wallet.CurrentState == WalletState.Active)
+                                    message = authService.DeactivateWallet(currentUser);
+                                else
+                                    message = authService.ActivateWallet(currentUser);
+
                                 Menu.ShowMessage(message);
                             }
                             else if (storeInput == 14)
