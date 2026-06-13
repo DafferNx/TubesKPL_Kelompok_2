@@ -8,4 +8,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CurrencyConverter\Libraries.csproj" />
+    <ProjectReference Include="..\TubesKPL_Kelompok_2\TubesKPL_Kelompok_2.csproj" />
+  </ItemGroup>
+
 </Project>

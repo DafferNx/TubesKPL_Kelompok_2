@@ -1,6 +1,6 @@
 ﻿namespace GUI
 {
-    partial class UserControl4
+    partial class Wallet
     {
         /// <summary> 
         /// Required designer variable.

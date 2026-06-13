@@ -1,6 +1,6 @@
 ﻿namespace GUI
 {
-    partial class UserControl2
+    partial class Cart
     {
         /// <summary> 
         /// Required designer variable.
