@@ -1,6 +1,6 @@
 ﻿namespace GUI
 {
-    partial class UserControl1
+    partial class Store
     {
         /// <summary> 
         /// Required designer variable.

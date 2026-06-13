@@ -1,6 +1,6 @@
 ﻿namespace GUI
 {
-    partial class UserControl5
+    partial class RefundRequest
     {
         /// <summary> 
         /// Required designer variable.
