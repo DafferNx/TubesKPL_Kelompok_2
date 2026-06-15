@@ -1,4 +1,7 @@
-﻿namespace GUI
+﻿using System.Windows.Forms;
+using Timer = System.Windows.Forms.Timer;
+
+namespace GUI.Control
 {
     partial class Store
     {
@@ -6,144 +9,140 @@
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
+        #region Component Designer generated code
+
         private void InitializeComponent()
         {
-            lblTitle = new Label();
-            lblWallet = new Label();
-            dgvGames = new DataGridView();
-            btnBuy = new Button();
-            btnAddToCart = new Button();
+            components = new System.ComponentModel.Container();
+
+            panelHeader = new Panel();
+            panelSearch = new Panel();
+            panelGames = new Panel();
+            panelToast = new Panel();
+
+            lblStoreTitle = new Label();
+            lblGameCount = new Label();
+            lblToast = new Label();
+
+            txtSearch = new TextBox();
+            cmbFilter = new ComboBox();
             btnRefresh = new Button();
-            btnToggleWallet = new Button();
-            tbTopUp = new TextBox();
-            btnTopUp = new Button();
+
+            timerToast = new Timer(components);
+
             SuspendLayout();
-            // 
-            // lblTitle
-            // 
-            lblTitle.AutoSize = true;
-            lblTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblTitle.Location = new Point(20, 15);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(98, 45);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "STORE";
-            // 
-            // lblWallet
-            // 
-            lblWallet.AutoSize = true;
-            lblWallet.Font = new Font("Segoe UI", 10F);
-            lblWallet.Location = new Point(20, 55);
-            lblWallet.Name = "lblWallet";
-            lblWallet.Size = new Size(89, 28);
-            lblWallet.TabIndex = 1;
-            lblWallet.Text = "Wallet: ...";
-            // 
-            // dgvGames
-            // 
-            dgvGames.AllowUserToAddRows = false;
-            dgvGames.AllowUserToDeleteRows = false;
-            dgvGames.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvGames.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvGames.Location = new Point(20, 85);
-            dgvGames.MultiSelect = false;
-            dgvGames.Name = "dgvGames";
-            dgvGames.ReadOnly = true;
-            dgvGames.RowHeadersVisible = false;
-            dgvGames.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvGames.Size = new Size(580, 200);
-            dgvGames.TabIndex = 2;
-            dgvGames.Columns.Add("Id", "ID");
-            dgvGames.Columns.Add("Name", "Nama");
-            dgvGames.Columns.Add("Price", "Harga");
-            // 
-            // btnBuy
-            // 
-            btnBuy.Location = new Point(20, 300);
-            btnBuy.Name = "btnBuy";
-            btnBuy.Size = new Size(100, 35);
-            btnBuy.TabIndex = 3;
-            btnBuy.Text = "Beli";
-            btnBuy.UseVisualStyleBackColor = true;
-            // 
-            // btnAddToCart
-            // 
-            btnAddToCart.Location = new Point(130, 300);
-            btnAddToCart.Name = "btnAddToCart";
-            btnAddToCart.Size = new Size(100, 35);
-            btnAddToCart.TabIndex = 4;
-            btnAddToCart.Text = "Add to Cart";
-            btnAddToCart.UseVisualStyleBackColor = true;
-            // 
-            // btnRefresh
-            // 
-            btnRefresh.Location = new Point(240, 300);
-            btnRefresh.Name = "btnRefresh";
-            btnRefresh.Size = new Size(100, 35);
-            btnRefresh.TabIndex = 5;
-            btnRefresh.Text = "Refresh";
-            btnRefresh.UseVisualStyleBackColor = true;
-            // 
-            // btnToggleWallet
-            // 
-            btnToggleWallet.Location = new Point(20, 350);
-            btnToggleWallet.Name = "btnToggleWallet";
-            btnToggleWallet.Size = new Size(160, 35);
-            btnToggleWallet.TabIndex = 6;
-            btnToggleWallet.UseVisualStyleBackColor = true;
-            // 
-            // tbTopUp
-            // 
-            tbTopUp.Location = new Point(20, 400);
-            tbTopUp.Name = "tbTopUp";
-            tbTopUp.PlaceholderText = "Jumlah";
-            tbTopUp.Size = new Size(100, 31);
-            tbTopUp.TabIndex = 7;
-            // 
-            // btnTopUp
-            // 
-            btnTopUp.Location = new Point(130, 398);
-            btnTopUp.Name = "btnTopUp";
-            btnTopUp.Size = new Size(100, 35);
-            btnTopUp.TabIndex = 8;
-            btnTopUp.Text = "Top Up";
-            btnTopUp.UseVisualStyleBackColor = true;
-            // 
-            // Store
-            // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+
+            // ── panelHeader ─────────────────────────────────────────────
+            panelHeader.Dock = DockStyle.Top;
+            panelHeader.Height = 60;
+            panelHeader.BackColor = System.Drawing.Color.FromArgb(22, 22, 28);
+            panelHeader.Controls.Add(lblStoreTitle);
+            panelHeader.Controls.Add(btnRefresh);
+
+            lblStoreTitle.Text = "🏪 Store";
+            lblStoreTitle.Font = new System.Drawing.Font("Segoe UI", 16f, System.Drawing.FontStyle.Bold);
+            lblStoreTitle.ForeColor = System.Drawing.Color.White;
+            lblStoreTitle.AutoSize = true;
+            lblStoreTitle.Location = new System.Drawing.Point(20, 14);
+
+            btnRefresh.Text = "↻";
+            btnRefresh.Size = new System.Drawing.Size(36, 36);
+            btnRefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnRefresh.BackColor = System.Drawing.Color.FromArgb(40, 40, 48);
+            btnRefresh.ForeColor = System.Drawing.Color.White;
+            btnRefresh.FlatStyle = FlatStyle.Flat;
+            btnRefresh.FlatAppearance.BorderSize = 0;
+            btnRefresh.Font = new System.Drawing.Font("Segoe UI", 13f);
+            btnRefresh.Cursor = Cursors.Hand;
+            btnRefresh.Click += new System.EventHandler(btnRefresh_Click);
+
+            // ── panelSearch ─────────────────────────────────────────────
+            panelSearch.Dock = DockStyle.Top;
+            panelSearch.Height = 48;
+            panelSearch.BackColor = System.Drawing.Color.FromArgb(18, 18, 22);
+            panelSearch.Controls.Add(txtSearch);
+            panelSearch.Controls.Add(cmbFilter);
+            panelSearch.Controls.Add(lblGameCount);
+
+            txtSearch.PlaceholderText = "Cari game...";
+            txtSearch.Font = new System.Drawing.Font("Segoe UI", 10f);
+            txtSearch.BackColor = System.Drawing.Color.FromArgb(36, 36, 44);
+            txtSearch.ForeColor = System.Drawing.Color.White;
+            txtSearch.BorderStyle = BorderStyle.FixedSingle;
+            txtSearch.Location = new System.Drawing.Point(16, 10);
+            txtSearch.Size = new System.Drawing.Size(240, 28);
+            txtSearch.TextChanged += new System.EventHandler(txtSearch_TextChanged);
+
+            cmbFilter.Items.AddRange(new object[] { "Semua", "Belum Dimiliki", "Di Cart", "Dimiliki" });
+            cmbFilter.SelectedIndex = 0;
+            cmbFilter.Font = new System.Drawing.Font("Segoe UI", 9.5f);
+            cmbFilter.BackColor = System.Drawing.Color.FromArgb(36, 36, 44);
+            cmbFilter.ForeColor = System.Drawing.Color.White;
+            cmbFilter.FlatStyle = FlatStyle.Flat;
+            cmbFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbFilter.Location = new System.Drawing.Point(268, 10);
+            cmbFilter.Size = new System.Drawing.Size(160, 28);
+            cmbFilter.SelectedIndexChanged += new System.EventHandler(cmbFilter_SelectedIndexChanged);
+
+            lblGameCount.Text = "";
+            lblGameCount.Font = new System.Drawing.Font("Segoe UI", 8.5f);
+            lblGameCount.ForeColor = System.Drawing.Color.FromArgb(120, 120, 128);
+            lblGameCount.AutoSize = true;
+            lblGameCount.Location = new System.Drawing.Point(444, 15);
+
+            // ── panelGames ──────────────────────────────────────────────
+            panelGames.AutoScroll = true;
+            panelGames.Dock = DockStyle.Fill;
+            panelGames.BackColor = System.Drawing.Color.FromArgb(26, 26, 32);
+            panelGames.Padding = new Padding(16, 12, 16, 12);
+
+            // ── panelToast ──────────────────────────────────────────────
+            panelToast.Dock = DockStyle.Bottom;
+            panelToast.Height = 0;
+            panelToast.BackColor = System.Drawing.Color.FromArgb(44, 44, 54);
+            panelToast.Controls.Add(lblToast);
+
+            lblToast.Text = "";
+            lblToast.Font = new System.Drawing.Font("Segoe UI", 9.5f);
+            lblToast.ForeColor = System.Drawing.Color.White;
+            lblToast.AutoSize = false;
+            lblToast.Dock = DockStyle.Fill;
+            lblToast.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+
+            timerToast.Interval = 2500;
+            timerToast.Tick += new System.EventHandler(timerToast_Tick);
+
+            // ── Store UserControl ────────────────────────────────────────
+            AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.Control;
-            Controls.Add(btnTopUp);
-            Controls.Add(tbTopUp);
-            Controls.Add(btnToggleWallet);
-            Controls.Add(btnRefresh);
-            Controls.Add(btnAddToCart);
-            Controls.Add(btnBuy);
-            Controls.Add(dgvGames);
-            Controls.Add(lblWallet);
-            Controls.Add(lblTitle);
+            BackColor = System.Drawing.Color.FromArgb(26, 26, 32);
+            Size = new System.Drawing.Size(900, 600);
+            Controls.Add(panelGames);
+            Controls.Add(panelToast);
+            Controls.Add(panelSearch);
+            Controls.Add(panelHeader);
             Name = "Store";
-            Size = new Size(637, 450);
+
             ResumeLayout(false);
             PerformLayout();
         }
 
-        private Label lblTitle;
-        private Label lblWallet;
-        private DataGridView dgvGames;
-        private Button btnBuy;
-        private Button btnAddToCart;
+        #endregion
+
+        private Panel panelHeader;
+        private Panel panelSearch;
+        private Panel panelGames;
+        private Panel panelToast;
+        private Label lblStoreTitle;
+        private Label lblGameCount;
+        private Label lblToast;
+        private TextBox txtSearch;
+        private ComboBox cmbFilter;
         private Button btnRefresh;
-        private Button btnToggleWallet;
-        private TextBox tbTopUp;
-        private Button btnTopUp;
+        private Timer timerToast;
     }
 }

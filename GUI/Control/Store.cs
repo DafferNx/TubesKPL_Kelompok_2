@@ -1,120 +1,219 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Libraries;
 
-namespace GUI
+namespace GUI.Control
 {
     public partial class Store : UserControl
     {
-        private User currentUser;
-        private GameService gameService;
-        private AuthService authService;
+        // ── State ─────────────────────────────────────────────────────────────────
+        private User _currentUser;
+        private GameService _gameService;
+        private AuthService _authService;
+        private List<Game> _allGames = new();
+        private List<Game> _filteredGames = new();
 
-        public Store(User user, GameService gs, AuthService auth)
+        // ── Event ke MainForm ────────────────────────────────────────────────────
+        public event Action<Game, User>? GameDetailRequested;
+
+        public Store(User user, GameService gameService, AuthService authService)
         {
-            currentUser = user;
-            gameService = gs;
-            authService = auth;
-
+            _currentUser = user;
+            _gameService = gameService;
+            _authService = authService;
             InitializeComponent();
-
-            btnBuy.Click += (s, e) => BuyGame();
-            btnAddToCart.Click += (s, e) => AddToCart();
-            btnRefresh.Click += (s, e) => LoadGames();
-            btnToggleWallet.Click += (s, e) => ToggleWallet();
-            btnTopUp.Click += (s, e) => TopUp();
-
-            UpdateToggleButton();
-            LoadGames();
+            RefreshData();
         }
 
-        private void UpdateToggleButton()
+        // ── Init ─────────────────────────────────────────────────────────────────
+        private void RefreshData()
         {
-            btnToggleWallet.Text = currentUser.Wallet.CurrentState == WalletState.Active
-                ? "Nonaktifkan Wallet"
-                : "Aktifkan Wallet";
+            _allGames = _gameService.getAllGames(_currentUser.Id);
+            ApplyFilter();
         }
 
-        private void LoadGames()
+        protected override void OnSizeChanged(EventArgs e)
         {
-            try
+            base.OnSizeChanged(e);
+            LayoutHeaderButtons();
+        }
+
+        private void LayoutHeaderButtons()
+        {
+            btnRefresh.Location = new Point(panelHeader.Width - btnRefresh.Width - 12, 12);
+        }
+
+        // ── Search & Filter ───────────────────────────────────────────────────────
+        private void txtSearch_TextChanged(object sender, EventArgs e) => ApplyFilter();
+        private void cmbFilter_SelectedIndexChanged(object sender, EventArgs e) => ApplyFilter();
+        private void btnRefresh_Click(object sender, EventArgs e) => RefreshData();
+
+        private void ApplyFilter()
+        {
+            string keyword = txtSearch.Text.Trim().ToLower();
+            string filter = cmbFilter.SelectedItem?.ToString() ?? "Semua";
+
+            _filteredGames = _allGames.Where(g =>
             {
-                var games = gameService.getAllGames(currentUser.Id);
-                dgvGames.Rows.Clear();
-
-                foreach (var game in games)
+                bool matchName = string.IsNullOrEmpty(keyword) || g.Name.ToLower().Contains(keyword);
+                bool matchStatus = filter switch
                 {
-                    if (game.Status == GameStatus.Owned || game.Status == GameStatus.PendingRefund) continue;
-                    dgvGames.Rows.Add(game.Id, game.Name, CurrencyConverter.Format(game.Price, RuntimeConfig.Currency));
-                }
+                    "Belum Dimiliki" => g.Status == GameStatus.NotOwned,
+                    "Di Cart" => g.Status == GameStatus.Cart,
+                    "Dimiliki" => g.Status == GameStatus.Owned,
+                    _ => true
+                };
+                return matchName && matchStatus;
+            }).ToList();
 
-                UpdateWalletDisplay();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading games: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            RenderGameList();
         }
 
-        private void UpdateWalletDisplay()
+        // ── Render game cards ─────────────────────────────────────────────────────
+        private void RenderGameList()
         {
-            currentUser = authService.GetUserById(currentUser.Id);
-            lblWallet.Text = $"User: {currentUser.Username} | Wallet: {currentUser.Wallet.CurrentState} | Balance: {CurrencyConverter.Format(currentUser.Wallet.Balance, RuntimeConfig.Currency)}";
-            UpdateToggleButton();
-        }
+            panelGames.SuspendLayout();
+            panelGames.Controls.Clear();
+            lblGameCount.Text = $"{_filteredGames.Count} game ditemukan";
 
-        private void BuyGame()
-        {
-            if (dgvGames.SelectedRows.Count == 0)
+            if (_filteredGames.Count == 0)
             {
-                MessageBox.Show("Pilih game terlebih dahulu!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                panelGames.Controls.Add(new Label
+                {
+                    Text = "Tidak ada game yang cocok dengan filter.",
+                    ForeColor = Color.FromArgb(120, 120, 128),
+                    Font = new Font("Segoe UI", 10),
+                    AutoSize = false,
+                    Size = new Size(panelGames.Width - 32, 40),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Location = new Point(0, 20)
+                });
+                panelGames.ResumeLayout();
                 return;
             }
 
-            int gameId = (int)dgvGames.SelectedRows[0].Cells["Id"].Value;
-            string result = gameService.buyGame(currentUser.Id, gameId);
-            MessageBox.Show(result, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            LoadGames();
-        }
-
-        private void AddToCart()
-        {
-            if (dgvGames.SelectedRows.Count == 0)
+            int y = 0;
+            foreach (var game in _filteredGames)
             {
-                MessageBox.Show("Pilih game terlebih dahulu!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
+                var card = CreateGameCard(game);
+                card.Location = new Point(0, y);
+                panelGames.Controls.Add(card);
+                y += card.Height + 8;
             }
 
-            int gameId = (int)dgvGames.SelectedRows[0].Cells["Id"].Value;
-            string result = gameService.addToCart(currentUser.Id, gameId);
-            MessageBox.Show(result, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            LoadGames();
+            panelGames.ResumeLayout();
         }
 
-        private void ToggleWallet()
+        private Panel CreateGameCard(Game game)
         {
-            string result;
-            if (currentUser.Wallet.CurrentState == WalletState.Active)
-                result = authService.DeactivateWallet(currentUser);
-            else
-                result = authService.ActivateWallet(currentUser);
-
-            MessageBox.Show(result, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            LoadGames();
-        }
-
-        private void TopUp()
-        {
-            if (!int.TryParse(tbTopUp.Text.Trim(), out int amount) || amount <= 0)
+            Color statusColor = game.Status switch
             {
-                MessageBox.Show("Masukkan jumlah top up yang valid!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                GameStatus.Owned => Color.FromArgb(52, 199, 89),
+                GameStatus.Cart => Color.FromArgb(255, 159, 10),
+                GameStatus.PendingRefund => Color.FromArgb(255, 69, 58),
+                _ => Color.FromArgb(120, 120, 128)
+            };
 
-            string result = authService.TopUpWallet(currentUser, amount);
-            MessageBox.Show(result, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            tbTopUp.Clear();
-            LoadGames();
+            string statusText = game.Status switch
+            {
+                GameStatus.Owned => "✓ Dimiliki",
+                GameStatus.Cart => "🛒 Di Cart",
+                GameStatus.PendingRefund => "⏳ Refund",
+                _ => "• Tersedia"
+            };
+
+            var card = new Panel
+            {
+                Size = new Size(panelGames.Width - 32, 72),
+                BackColor = Color.FromArgb(30, 30, 35),
+                Cursor = Cursors.Hand,
+                Tag = game
+            };
+
+            var accent = new Panel
+            {
+                Size = new Size(4, 72),
+                Location = new Point(0, 0),
+                BackColor = statusColor
+            };
+
+            var lblName = new Label
+            {
+                Text = game.Name,
+                Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(18, 12),
+                AutoSize = true
+            };
+
+            // Harga menggunakan CurrencyConverter sesuai RuntimeConfig
+            var lblPrice = new Label
+            {
+                Text = CurrencyConverter.Format(game.Price, RuntimeConfig.Currency),
+                Font = new Font("Segoe UI", 9.5f),
+                ForeColor = Color.FromArgb(180, 180, 180),
+                Location = new Point(18, 38),
+                AutoSize = true
+            };
+
+            var lblStatus = new Label
+            {
+                Text = statusText,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = statusColor,
+                AutoSize = true
+            };
+
+            var btnDetail = new Button
+            {
+                Text = "Detail →",
+                Size = new Size(80, 30),
+                BackColor = Color.FromArgb(44, 44, 54),
+                ForeColor = Color.FromArgb(200, 200, 210),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 8.5f),
+                Cursor = Cursors.Hand,
+                Tag = game
+            };
+            btnDetail.FlatAppearance.BorderSize = 1;
+            btnDetail.FlatAppearance.BorderColor = Color.FromArgb(60, 60, 72);
+            btnDetail.Location = new Point(card.Width - btnDetail.Width - 14, 21);
+            lblStatus.Location = new Point(card.Width - btnDetail.Width - lblStatus.PreferredWidth - 26, 24);
+
+            EventHandler openDetail = (s, e) => GameDetailRequested?.Invoke(game, _currentUser);
+            card.Click += openDetail;
+            lblName.Click += openDetail;
+            lblPrice.Click += openDetail;
+            accent.Click += openDetail;
+            btnDetail.Click += openDetail;
+
+            card.MouseEnter += (s, e) => card.BackColor = Color.FromArgb(40, 40, 48);
+            card.MouseLeave += (s, e) => card.BackColor = Color.FromArgb(30, 30, 35);
+
+            card.Controls.Add(accent);
+            card.Controls.Add(lblName);
+            card.Controls.Add(lblPrice);
+            card.Controls.Add(lblStatus);
+            card.Controls.Add(btnDetail);
+
+            return card;
+        }
+
+        // ── Toast ─────────────────────────────────────────────────────────────────
+        private void ShowToast(string message)
+        {
+            lblToast.Text = message;
+            panelToast.Height = 34;
+            timerToast.Start();
+        }
+
+        private void timerToast_Tick(object sender, EventArgs e)
+        {
+            timerToast.Stop();
+            panelToast.Height = 0;
         }
     }
 }

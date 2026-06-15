@@ -18,15 +18,32 @@ namespace GUI.Forms
             authService = new AuthService();
             Text = $"SETIM - {currentUser.Username}";
 
-            btnStore.Click += (s, e) => ShowControl(new Store(currentUser, gameService, authService));
+            btnStore.Click += (s, e) => ShowStore();
             btnLibrary.Click += (s, e) => ShowControl(new Library(currentUser, gameService));
             btnWallet.Click += (s, e) => ShowControl(new Wallet(currentUser, authService));
             btnCart.Click += (s, e) => ShowControl(new Cart(currentUser, gameService, authService));
             btnLogout.Click += (s, e) => Logout();
 
-            ShowControl(new Store(currentUser, gameService, authService));
+            ShowStore();
         }
 
+        // ── Navigasi Store ───────────────────────────────────────────────────────
+        private void ShowStore()
+        {
+            var store = new GUI.Control.Store(currentUser, gameService, authService);
+            store.GameDetailRequested += (game, user) => ShowGameDetail(game, user);
+            ShowControl(store);
+        }
+
+        private void ShowGameDetail(Game game, User user)
+        {
+            var detail = new GUI.Control.GameDetail(user, gameService);
+            detail.BackToStoreRequested += _ => ShowStore();
+            detail.LoadDetail(game);
+            ShowControl(detail);
+        }
+
+        // ── Helper ──────────────────────────────────────────────────────────────
         private void ShowControl(UserControl control)
         {
             if (currentControl != null)
