@@ -1,6 +1,6 @@
-﻿namespace GUI
+﻿namespace GUI.Control
 {
-    partial class Wallet
+    partial class LibraryDetail
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,32 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
-            SuspendLayout();
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(203, 148);
-            label1.Name = "label1";
-            label1.Size = new Size(60, 25);
-            label1.TabIndex = 0;
-            label1.Text = "Wallet";
-            // 
-            // Wallet
-            // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.ControlDarkDark;
-            Controls.Add(label1);
-            Name = "Wallet";
-            Size = new Size(491, 339);
-            ResumeLayout(false);
-            PerformLayout();
+            components = new System.ComponentModel.Container();
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         }
 
         #endregion
-
-        private Label label1;
     }
 }

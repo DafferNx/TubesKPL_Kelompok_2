@@ -6,11 +6,11 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace GUI
+namespace GUI.Forms
 {
-    public partial class RefundRequest : UserControl
+    public partial class LoginForm : Form
     {
-        public RefundRequest()
+        public LoginForm()
         {
             InitializeComponent();
         }
