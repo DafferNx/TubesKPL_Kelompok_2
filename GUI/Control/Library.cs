@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Libraries;
 
@@ -15,11 +15,37 @@ namespace GUI
             gameService = gs;
 
             InitializeComponent();
+            StyleDataGridView();
 
             btnRefund.Click += (s, e) => RequestRefund();
             btnRefresh.Click += (s, e) => LoadLibrary();
 
             LoadLibrary();
+        }
+
+        private void StyleDataGridView()
+        {
+            dgvLibrary.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.FromArgb(0, 150, 255),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Alignment = DataGridViewContentAlignment.MiddleCenter,
+                Padding = new Padding(0, 5, 0, 5)
+            };
+            dgvLibrary.DefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(35, 35, 35),
+                ForeColor = Color.FromArgb(220, 220, 220),
+                Font = new Font("Segoe UI", 10F),
+                SelectionBackColor = Color.FromArgb(0, 80, 160),
+                SelectionForeColor = Color.White,
+                Padding = new Padding(5, 3, 5, 3)
+            };
+            dgvLibrary.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(40, 40, 40)
+            };
         }
 
         private void LoadLibrary()
