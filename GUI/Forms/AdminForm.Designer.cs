@@ -2,38 +2,126 @@
 {
     partial class AdminForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
-            {
                 components.Dispose();
-            }
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "AdminForm";
+            NavPanel = new Panel();
+            PagePanel = new Panel();
+            btnGameManagement = new Button();
+            btnRefundManagement = new Button();
+            btnWalletManagement = new Button();
+            btnLogout = new Button();
+            NavPanel.SuspendLayout();
+            SuspendLayout();
+            // 
+            // NavPanel
+            // 
+            NavPanel.BackColor = Color.FromArgb(28, 28, 28);
+            NavPanel.Controls.Add(btnGameManagement);
+            NavPanel.Controls.Add(btnRefundManagement);
+            NavPanel.Controls.Add(btnWalletManagement);
+            NavPanel.Controls.Add(btnLogout);
+            NavPanel.Dock = DockStyle.Left;
+            NavPanel.Location = new Point(0, 0);
+            NavPanel.Name = "NavPanel";
+            NavPanel.Size = new Size(180, 520);
+            NavPanel.TabIndex = 0;
+            // 
+            // PagePanel
+            // 
+            PagePanel.BackColor = Color.FromArgb(28, 28, 28);
+            PagePanel.Dock = DockStyle.Fill;
+            PagePanel.Location = new Point(180, 0);
+            PagePanel.Name = "PagePanel";
+            PagePanel.Size = new Size(620, 520);
+            PagePanel.TabIndex = 1;
+            // 
+            // btnGameManagement
+            // 
+            btnGameManagement.BackColor = Color.FromArgb(45, 45, 45);
+            btnGameManagement.FlatAppearance.BorderSize = 0;
+            btnGameManagement.FlatStyle = FlatStyle.Flat;
+            btnGameManagement.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnGameManagement.ForeColor = Color.White;
+            btnGameManagement.Location = new Point(20, 25);
+            btnGameManagement.Name = "btnGameManagement";
+            btnGameManagement.Size = new Size(140, 45);
+            btnGameManagement.TabIndex = 0;
+            btnGameManagement.Text = "Game";
+            btnGameManagement.UseVisualStyleBackColor = false;
+            // 
+            // btnRefundManagement
+            // 
+            btnRefundManagement.BackColor = Color.FromArgb(45, 45, 45);
+            btnRefundManagement.FlatAppearance.BorderSize = 0;
+            btnRefundManagement.FlatStyle = FlatStyle.Flat;
+            btnRefundManagement.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnRefundManagement.ForeColor = Color.White;
+            btnRefundManagement.Location = new Point(20, 85);
+            btnRefundManagement.Name = "btnRefundManagement";
+            btnRefundManagement.Size = new Size(140, 45);
+            btnRefundManagement.TabIndex = 1;
+            btnRefundManagement.Text = "Refund";
+            btnRefundManagement.UseVisualStyleBackColor = false;
+            // 
+            // btnWalletManagement
+            // 
+            btnWalletManagement.BackColor = Color.FromArgb(45, 45, 45);
+            btnWalletManagement.FlatAppearance.BorderSize = 0;
+            btnWalletManagement.FlatStyle = FlatStyle.Flat;
+            btnWalletManagement.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnWalletManagement.ForeColor = Color.White;
+            btnWalletManagement.Location = new Point(20, 145);
+            btnWalletManagement.Name = "btnWalletManagement";
+            btnWalletManagement.Size = new Size(140, 45);
+            btnWalletManagement.TabIndex = 2;
+            btnWalletManagement.Text = "Wallet";
+            btnWalletManagement.UseVisualStyleBackColor = false;
+            // 
+            // btnLogout
+            // 
+            btnLogout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnLogout.BackColor = Color.FromArgb(60, 60, 60);
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.FlatStyle = FlatStyle.Flat;
+            btnLogout.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnLogout.ForeColor = Color.FromArgb(200, 200, 200);
+            btnLogout.Location = new Point(20, 450);
+            btnLogout.Name = "btnLogout";
+            btnLogout.Size = new Size(140, 45);
+            btnLogout.TabIndex = 3;
+            btnLogout.Text = "Logout";
+            btnLogout.UseVisualStyleBackColor = false;
+            // 
+            // AdminForm
+            // 
+            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(28, 28, 28);
+            ClientSize = new Size(800, 520);
+            Controls.Add(PagePanel);
+            Controls.Add(NavPanel);
+            MinimumSize = new Size(640, 400);
+            Name = "AdminForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "SETIM - Admin";
+            NavPanel.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
-        #endregion
+        private Panel NavPanel;
+        private Button btnLogout;
+        private Button btnWalletManagement;
+        private Button btnRefundManagement;
+        private Button btnGameManagement;
+        private Panel PagePanel;
     }
 }
