@@ -47,6 +47,11 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Database SQLite
+**/game_store.db
+**/*.db-shm
+**/*.db-wal
+
 # Build results on 'Bin' directories
 **/[Bb]in/*
 # Uncomment if you have tasks that rely on *.refresh files to move binaries
