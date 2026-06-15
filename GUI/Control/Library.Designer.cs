@@ -28,32 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
             SuspendLayout();
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(249, 170);
-            label1.Name = "label1";
-            label1.Size = new Size(65, 25);
-            label1.TabIndex = 0;
-            label1.Text = "Library";
             // 
             // Library
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.HotTrack;
-            Controls.Add(label1);
+            BackColor = SystemColors.Control;
             Name = "Library";
             Size = new Size(522, 387);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
-
-        private Label label1;
     }
 }
