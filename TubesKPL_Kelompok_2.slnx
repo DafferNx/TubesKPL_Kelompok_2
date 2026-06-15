@@ -1,7 +1,15 @@
 <Solution>
-  <Project Path="API/API.csproj" Id="fb8e7636-235b-402e-9f35-dc679e863de8" />
-  <Project Path="CurrencyConverter/Libraries.csproj" Id="757df3ed-9846-44fd-82af-c800d5ad2943" />
-  <Project Path="GUI/GUI.csproj" Id="e7467e67-3008-4dd7-bced-4ec14e30edb2" />
+  <Project Path="API/API.csproj" Id="fb8e7636-235b-402e-9f35-dc679e863de8">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
+  <Project Path="CurrencyConverter/Libraries.csproj" Id="757df3ed-9846-44fd-82af-c800d5ad2943">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
+  <Project Path="GUI/GUI.csproj" Id="e7467e67-3008-4dd7-bced-4ec14e30edb2">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
   <Project Path="TubesKPL_Kelompok_2/TubesKPL_Kelompok_2.csproj" />
-  <Project Path="UnitTest/UnitTest.csproj" Id="0cdc5746-995e-45e2-b4ab-a2c04a0a998e" />
+  <Project Path="UnitTest/UnitTest.csproj" Id="0cdc5746-995e-45e2-b4ab-a2c04a0a998e">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
 </Solution>
