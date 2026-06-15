@@ -13,4 +13,10 @@
     <ProjectReference Include="..\TubesKPL_Kelompok_2\TubesKPL_Kelompok_2.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\currency_config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
