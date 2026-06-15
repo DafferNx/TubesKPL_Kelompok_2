@@ -1,4 +1,7 @@
-﻿namespace GUI
+using System.Windows.Forms;
+using Timer = System.Windows.Forms.Timer;
+
+namespace GUI
 {
     partial class Cart
     {
@@ -6,141 +9,168 @@
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+
+            panelHeader = new Panel();
+            panelSummary = new Panel();  // sticky bottom summary bar
+            panelItems = new Panel();  // scrollable card list
+            panelEmpty = new Panel();  // empty state
+
             lblTitle = new Label();
+            lblSubtitle = new Label();
+            lblItemCount = new Label();
+            lblTotalLabel = new Label();
             lblTotal = new Label();
-            dgvCart = new DataGridView();
-            btnCheckout = new Button();
-            btnRemove = new Button();
+            lblEmpty = new Label();
+
             btnRefresh = new Button();
-            ((System.ComponentModel.ISupportInitialize)dgvCart).BeginInit();
+            btnCheckout = new Button();
+
+            timerToast = new Timer(components) { Interval = 2500 };
+
             SuspendLayout();
-            // 
-            // lblTitle
-            // 
+
+            // ══════════════════════════════════════════════════════════════════
+            // panelHeader  (90px — cukup untuk title + subtitle)
+            // ══════════════════════════════════════════════════════════════════
+            panelHeader.Dock = DockStyle.Top;
+            panelHeader.Height = 90;
+            panelHeader.BackColor = System.Drawing.Color.FromArgb(14, 14, 20);
+            panelHeader.Controls.Add(lblTitle);
+            panelHeader.Controls.Add(lblSubtitle);
+            panelHeader.Controls.Add(lblItemCount);
+            panelHeader.Controls.Add(btnRefresh);
+
+            lblTitle.Text = "🛒  Cart";
+            lblTitle.Font = new System.Drawing.Font("Segoe UI", 17f, System.Drawing.FontStyle.Bold);
+            lblTitle.ForeColor = System.Drawing.Color.White;
             lblTitle.AutoSize = true;
-            lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(0, 150, 255);
-            lblTitle.Location = new Point(30, 25);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(120, 54);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "CART";
-            // 
-            // lblTotal
-            // 
-            lblTotal.AutoSize = true;
-            lblTotal.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblTotal.ForeColor = Color.FromArgb(180, 180, 180);
-            lblTotal.Location = new Point(30, 95);
-            lblTotal.Name = "lblTotal";
-            lblTotal.Size = new Size(78, 37);
-            lblTotal.TabIndex = 1;
-            lblTotal.Text = "Total:";
-            // 
-            // dgvCart
-            // 
-            dgvCart.AllowUserToAddRows = false;
-            dgvCart.AllowUserToDeleteRows = false;
-            dgvCart.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dgvCart.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvCart.BackgroundColor = Color.FromArgb(35, 35, 35);
-            dgvCart.BorderStyle = BorderStyle.None;
-            dgvCart.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvCart.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dgvCart.ColumnHeadersHeight = 40;
-            dgvCart.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dgvCart.EnableHeadersVisualStyles = false;
-            dgvCart.GridColor = Color.FromArgb(50, 50, 50);
-            dgvCart.Location = new Point(30, 145);
-            dgvCart.MultiSelect = false;
-            dgvCart.Name = "dgvCart";
-            dgvCart.ReadOnly = true;
-            dgvCart.RowHeadersVisible = false;
-            dgvCart.RowTemplate.Height = 38;
-            dgvCart.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvCart.Size = new Size(577, 185);
-            dgvCart.TabIndex = 2;
-            dgvCart.Columns.Add("Id", "ID");
-            dgvCart.Columns.Add("Name", "Nama");
-            dgvCart.Columns.Add("Price", "Harga");
-            // 
-            // btnCheckout
-            // 
-            btnCheckout.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnCheckout.BackColor = Color.FromArgb(0, 140, 90);
-            btnCheckout.FlatAppearance.BorderSize = 0;
-            btnCheckout.FlatStyle = FlatStyle.Flat;
-            btnCheckout.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnCheckout.ForeColor = Color.White;
-            btnCheckout.Location = new Point(467, 350);
-            btnCheckout.Name = "btnCheckout";
-            btnCheckout.Size = new Size(140, 50);
-            btnCheckout.TabIndex = 3;
-            btnCheckout.Text = "Checkout";
-            btnCheckout.UseVisualStyleBackColor = false;
-            // 
-            // btnRemove
-            // 
-            btnRemove.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            btnRemove.BackColor = Color.FromArgb(180, 70, 70);
-            btnRemove.FlatAppearance.BorderSize = 0;
-            btnRemove.FlatStyle = FlatStyle.Flat;
-            btnRemove.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnRemove.ForeColor = Color.White;
-            btnRemove.Location = new Point(30, 350);
-            btnRemove.Name = "btnRemove";
-            btnRemove.Size = new Size(140, 50);
-            btnRemove.TabIndex = 4;
-            btnRemove.Text = "Hapus";
-            btnRemove.UseVisualStyleBackColor = false;
-            // 
-            // btnRefresh
-            // 
-            btnRefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnRefresh.BackColor = Color.FromArgb(60, 60, 60);
-            btnRefresh.FlatAppearance.BorderSize = 0;
+            lblTitle.Location = new System.Drawing.Point(22, 8);
+
+            lblSubtitle.Text = "Game yang siap di-checkout";
+            lblSubtitle.Font = new System.Drawing.Font("Segoe UI", 9f);
+            lblSubtitle.ForeColor = System.Drawing.Color.FromArgb(100, 100, 125);
+            lblSubtitle.AutoSize = true;
+            lblSubtitle.Location = new System.Drawing.Point(24, 56);
+
+            lblItemCount.Text = "0 item";
+            lblItemCount.Font = new System.Drawing.Font("Segoe UI", 8.5f, System.Drawing.FontStyle.Bold);
+            lblItemCount.ForeColor = System.Drawing.Color.FromArgb(0, 150, 255);
+            lblItemCount.BackColor = System.Drawing.Color.FromArgb(0, 45, 90);
+            lblItemCount.AutoSize = false;
+            lblItemCount.Size = new System.Drawing.Size(54, 22);
+            lblItemCount.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblItemCount.Location = new System.Drawing.Point(110, 13);
+
+            // Refresh button — posisi X via LayoutHeader()
+            btnRefresh.Text = "↻";
+            btnRefresh.Size = new System.Drawing.Size(38, 38);
+            btnRefresh.Anchor = AnchorStyles.None;
+            btnRefresh.Location = new System.Drawing.Point(0, 26);
+            btnRefresh.BackColor = System.Drawing.Color.FromArgb(32, 32, 44);
+            btnRefresh.ForeColor = System.Drawing.Color.FromArgb(140, 140, 180);
             btnRefresh.FlatStyle = FlatStyle.Flat;
-            btnRefresh.Font = new Font("Segoe UI", 10F);
-            btnRefresh.ForeColor = Color.White;
-            btnRefresh.Location = new Point(507, 33);
-            btnRefresh.Name = "btnRefresh";
-            btnRefresh.Size = new Size(100, 40);
-            btnRefresh.TabIndex = 5;
-            btnRefresh.Text = "Refresh";
-            btnRefresh.UseVisualStyleBackColor = false;
-            // 
-            // Cart
-            // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            btnRefresh.FlatAppearance.BorderSize = 1;
+            btnRefresh.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(50, 50, 68);
+            btnRefresh.Font = new System.Drawing.Font("Segoe UI", 14f);
+            btnRefresh.Cursor = Cursors.Hand;
+
+            // ══════════════════════════════════════════════════════════════════
+            // panelSummary  (sticky bottom, checkout bar)
+            // ══════════════════════════════════════════════════════════════════
+            panelSummary.Dock = DockStyle.Bottom;
+            panelSummary.Height = 72;
+            panelSummary.BackColor = System.Drawing.Color.FromArgb(18, 18, 26);
+            panelSummary.Controls.Add(lblTotalLabel);
+            panelSummary.Controls.Add(lblTotal);
+            panelSummary.Controls.Add(btnCheckout);
+
+            lblTotalLabel.Text = "TOTAL";
+            lblTotalLabel.Font = new System.Drawing.Font("Segoe UI", 7.5f, System.Drawing.FontStyle.Bold);
+            lblTotalLabel.ForeColor = System.Drawing.Color.FromArgb(100, 100, 130);
+            lblTotalLabel.AutoSize = true;
+            lblTotalLabel.Location = new System.Drawing.Point(22, 10);
+
+            lblTotal.Text = "Rp 0";
+            lblTotal.Font = new System.Drawing.Font("Segoe UI", 18f, System.Drawing.FontStyle.Bold);
+            lblTotal.ForeColor = System.Drawing.Color.FromArgb(0, 215, 125);
+            lblTotal.AutoSize = true;
+            lblTotal.Location = new System.Drawing.Point(18, 26);
+
+            btnCheckout.Text = "✔  Checkout Semua";
+            btnCheckout.Size = new System.Drawing.Size(190, 44);
+            btnCheckout.Anchor = AnchorStyles.Right | AnchorStyles.Top;
+            btnCheckout.Location = new System.Drawing.Point(690, 14);
+            btnCheckout.BackColor = System.Drawing.Color.FromArgb(0, 195, 107);
+            btnCheckout.ForeColor = System.Drawing.Color.White;
+            btnCheckout.FlatStyle = FlatStyle.Flat;
+            btnCheckout.FlatAppearance.BorderSize = 0;
+            btnCheckout.Font = new System.Drawing.Font("Segoe UI", 10f, System.Drawing.FontStyle.Bold);
+            btnCheckout.Cursor = Cursors.Hand;
+
+            // ══════════════════════════════════════════════════════════════════
+            // panelItems  (scrollable card list)
+            // ══════════════════════════════════════════════════════════════════
+            panelItems.Dock = DockStyle.Fill;
+            panelItems.AutoScroll = true;
+            panelItems.BackColor = System.Drawing.Color.FromArgb(20, 20, 28);
+            panelItems.Padding = new Padding(22, 16, 22, 16);
+
+            // ── Empty state ────────────────────────────────────────────────────
+            panelEmpty.Anchor = AnchorStyles.None;
+            panelEmpty.Size = new System.Drawing.Size(340, 130);
+            panelEmpty.BackColor = System.Drawing.Color.Transparent;
+            panelEmpty.Visible = false;
+            panelEmpty.Controls.Add(lblEmpty);
+
+            lblEmpty.Text = "🛒\n\nCart kamu masih kosong.\nTambah game dari Store!";
+            lblEmpty.Font = new System.Drawing.Font("Segoe UI", 11f);
+            lblEmpty.ForeColor = System.Drawing.Color.FromArgb(80, 80, 105);
+            lblEmpty.AutoSize = false;
+            lblEmpty.Dock = DockStyle.Fill;
+            lblEmpty.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+
+            panelItems.Controls.Add(panelEmpty);
+
+            // Timer toast feedback
+            timerToast.Tick += new System.EventHandler(timerToast_Tick);
+
+            // Root layout
+            AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(28, 28, 28);
-            Controls.Add(btnRefresh);
-            Controls.Add(btnRemove);
-            Controls.Add(btnCheckout);
-            Controls.Add(dgvCart);
-            Controls.Add(lblTotal);
-            Controls.Add(lblTitle);
+            BackColor = System.Drawing.Color.FromArgb(20, 20, 28);
+            Size = new System.Drawing.Size(900, 600);
+            Controls.Add(panelItems);
+            Controls.Add(panelSummary);
+            Controls.Add(panelHeader);
             Name = "Cart";
-            Size = new Size(637, 450);
-            ((System.ComponentModel.ISupportInitialize)dgvCart).EndInit();
+
             ResumeLayout(false);
             PerformLayout();
         }
 
+        private Panel panelHeader;
+        private Panel panelSummary;
+        private Panel panelItems;
+        private Panel panelEmpty;
         private Label lblTitle;
+        private Label lblSubtitle;
+        private Label lblItemCount;
+        private Label lblTotalLabel;
         private Label lblTotal;
-        private DataGridView dgvCart;
-        private Button btnCheckout;
-        private Button btnRemove;
+        private Label lblEmpty;
         private Button btnRefresh;
+        private Button btnCheckout;
+        private Timer timerToast;
+
+        // Kept for compat — old Cart.cs used dgvCart but we no longer need it
+        private System.Windows.Forms.DataGridView dgvCart = new System.Windows.Forms.DataGridView();
+        private Button btnRemove = new Button();
     }
 }

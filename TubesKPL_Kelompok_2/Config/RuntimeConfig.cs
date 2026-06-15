@@ -52,4 +52,20 @@ public static class RuntimeConfig
         Currency = code;
         return $"Currency berhasil diganti ke {Currency}";
     }
+
+    /// <summary>
+    /// Menyimpan currency yang aktif ke file JSON agar persist setelah restart.
+    /// </summary>
+    public static void Save(string filePath)
+    {
+        try
+        {
+            string json = $"[\r\n  {{\r\n    \"Currency\": \"{Currency}\"\r\n  }}\r\n]\r\n";
+            System.IO.File.WriteAllText(filePath, json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Config] Gagal menyimpan config: {ex.Message}");
+        }
+    }
 }

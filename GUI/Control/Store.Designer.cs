@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
 
 namespace GUI.Control
@@ -24,9 +24,10 @@ namespace GUI.Control
             panelGames = new Panel();
             panelToast = new Panel();
 
-            lblStoreTitle = new Label();
-            lblGameCount = new Label();
-            lblToast = new Label();
+            lblStoreTitle    = new Label();
+            lblStoreSubtitle = new Label();
+            lblGameCount     = new Label();
+            lblToast         = new Label();
 
             txtSearch = new TextBox();
             cmbFilter = new ComboBox();
@@ -133,16 +134,17 @@ namespace GUI.Control
 
         #endregion
 
-        private Panel panelHeader;
-        private Panel panelSearch;
-        private Panel panelGames;
-        private Panel panelToast;
-        private Label lblStoreTitle;
-        private Label lblGameCount;
-        private Label lblToast;
+        private Panel   panelHeader;
+        private Panel   panelSearch;
+        private Panel   panelGames;
+        private Panel   panelToast;
+        private Label   lblStoreTitle;
+        private Label   lblStoreSubtitle;
+        private Label   lblGameCount;
+        private Label   lblToast;
         private TextBox txtSearch;
         private ComboBox cmbFilter;
-        private Button btnRefresh;
-        private Timer timerToast;
+        private Button  btnRefresh;
+        private Timer   timerToast;
     }
 }

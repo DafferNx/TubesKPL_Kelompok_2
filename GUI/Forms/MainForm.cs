@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 
 namespace GUI.Forms
@@ -18,11 +18,11 @@ namespace GUI.Forms
             authService = new AuthService();
             Text = $"SETIM - {currentUser.Username}";
 
-            btnStore.Click += (s, e) => ShowStore();
-            btnLibrary.Click += (s, e) => ShowControl(new Library(currentUser, gameService));
-            btnWallet.Click += (s, e) => ShowControl(new Wallet(currentUser, authService));
-            btnCart.Click += (s, e) => ShowControl(new Cart(currentUser, gameService, authService));
-            btnLogout.Click += (s, e) => Logout();
+            btnStore.Click   += (s, e) => ShowStore();
+            btnLibrary.Click += (s, e) => ShowLibrary();
+            btnWallet.Click  += (s, e) => ShowControl(new Wallet(currentUser, authService));
+            btnCart.Click    += (s, e) => ShowControl(new Cart(currentUser, gameService, authService));
+            btnLogout.Click  += (s, e) => Logout();
 
             ShowStore();
         }
@@ -31,16 +31,31 @@ namespace GUI.Forms
         private void ShowStore()
         {
             var store = new GUI.Control.Store(currentUser, gameService, authService);
-            store.GameDetailRequested += (game, user) => ShowGameDetail(game, user);
+            store.GameDetailRequested += (game, user) => ShowGameDetail(game, user, fromLibrary: false);
             ShowControl(store);
         }
 
-        private void ShowGameDetail(Game game, User user)
+        private void ShowGameDetail(Game game, User user, bool fromLibrary = false)
         {
             var detail = new GUI.Control.GameDetail(user, gameService);
-            detail.BackToStoreRequested += _ => ShowStore();
+            if (fromLibrary)
+            {
+                detail.BackToStoreRequested += _ => ShowLibrary();
+            }
+            else
+            {
+                detail.BackToStoreRequested += _ => ShowStore();
+            }
             detail.LoadDetail(game);
             ShowControl(detail);
+        }
+
+        // ── Navigasi Library ─────────────────────────────────────────────────────
+        private void ShowLibrary()
+        {
+            var lib = new GUI.Library(currentUser, gameService);
+            lib.GameDetailRequested += (game, user) => ShowGameDetail(game, user, fromLibrary: true);
+            ShowControl(lib);
         }
 
         // ── Helper ──────────────────────────────────────────────────────────────

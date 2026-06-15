@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -25,6 +25,7 @@ namespace GUI.Control
             _gameService = gameService;
             _authService = authService;
             InitializeComponent();
+            this.Load += (s, e) => { LayoutHeaderButtons(); LayoutSearchBar(); };
             RefreshData();
         }
 
@@ -35,15 +36,50 @@ namespace GUI.Control
             ApplyFilter();
         }
 
+        protected override void OnCreateControl()
+        {
+            base.OnCreateControl();
+            LayoutHeaderButtons();
+            LayoutSearchBar();
+        }
+
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
             LayoutHeaderButtons();
+            LayoutSearchBar();
+            RenderGameList();
         }
 
         private void LayoutHeaderButtons()
         {
-            btnRefresh.Location = new Point(panelHeader.Width - btnRefresh.Width - 12, 12);
+            if (panelHeader.Width == 0) return;
+            int btnY = (panelHeader.Height - btnRefresh.Height) / 2;
+            btnRefresh.Location = new Point(panelHeader.Width - btnRefresh.Width - 12, btnY);
+        }
+
+        /// <summary>Menyesuaikan posisi elemen search bar saat window di-resize.</summary>
+        private void LayoutSearchBar()
+        {
+            if (panelSearch.Width == 0) return;
+
+            const int padL    = 16;
+            const int gap     = 8;
+            const int filterW = 150;
+            const int countW  = 130;
+            int padR = padL;
+
+            // txtSearch memenuhi sisa ruang antara left-pad dan cmbFilter
+            int searchW = panelSearch.Width - padL - gap - filterW - gap - countW - padR;
+            searchW = Math.Max(80, searchW);
+
+            txtSearch.Location = new Point(padL, (panelSearch.Height - txtSearch.Height) / 2);
+            txtSearch.Width    = searchW;
+
+            cmbFilter.Location = new Point(txtSearch.Right + gap, (panelSearch.Height - cmbFilter.Height) / 2);
+            cmbFilter.Width    = filterW;
+
+            lblGameCount.Location = new Point(cmbFilter.Right + gap, (panelSearch.Height - lblGameCount.PreferredHeight) / 2);
         }
 
         // ── Search & Filter ───────────────────────────────────────────────────────
@@ -75,9 +111,14 @@ namespace GUI.Control
         // ── Render game cards ─────────────────────────────────────────────────────
         private void RenderGameList()
         {
+            if (panelGames.Width == 0) return; // belum siap
+
             panelGames.SuspendLayout();
             panelGames.Controls.Clear();
             lblGameCount.Text = $"{_filteredGames.Count} game ditemukan";
+
+            int cardWidth = panelGames.ClientSize.Width - panelGames.Padding.Horizontal - 16;
+            cardWidth = Math.Max(200, cardWidth);
 
             if (_filteredGames.Count == 0)
             {
@@ -87,7 +128,7 @@ namespace GUI.Control
                     ForeColor = Color.FromArgb(120, 120, 128),
                     Font = new Font("Segoe UI", 10),
                     AutoSize = false,
-                    Size = new Size(panelGames.Width - 32, 40),
+                    Size = new Size(cardWidth, 40),
                     TextAlign = ContentAlignment.MiddleCenter,
                     Location = new Point(0, 20)
                 });
@@ -98,7 +139,7 @@ namespace GUI.Control
             int y = 0;
             foreach (var game in _filteredGames)
             {
-                var card = CreateGameCard(game);
+                var card = CreateGameCard(game, cardWidth);
                 card.Location = new Point(0, y);
                 panelGames.Controls.Add(card);
                 y += card.Height + 8;
@@ -107,7 +148,7 @@ namespace GUI.Control
             panelGames.ResumeLayout();
         }
 
-        private Panel CreateGameCard(Game game)
+        private Panel CreateGameCard(Game game, int cardWidth)
         {
             Color statusColor = game.Status switch
             {
@@ -127,7 +168,7 @@ namespace GUI.Control
 
             var card = new Panel
             {
-                Size = new Size(panelGames.Width - 32, 72),
+                Size = new Size(cardWidth, 72),
                 BackColor = Color.FromArgb(30, 30, 35),
                 Cursor = Cursors.Hand,
                 Tag = game
@@ -180,8 +221,8 @@ namespace GUI.Control
             };
             btnDetail.FlatAppearance.BorderSize = 1;
             btnDetail.FlatAppearance.BorderColor = Color.FromArgb(60, 60, 72);
-            btnDetail.Location = new Point(card.Width - btnDetail.Width - 14, 21);
-            lblStatus.Location = new Point(card.Width - btnDetail.Width - lblStatus.PreferredWidth - 26, 24);
+            btnDetail.Location = new Point(cardWidth - btnDetail.Width - 14, 21);
+            lblStatus.Location = new Point(cardWidth - btnDetail.Width - lblStatus.PreferredWidth - 26, 24);
 
             EventHandler openDetail = (s, e) => GameDetailRequested?.Invoke(game, _currentUser);
             card.Click += openDetail;
