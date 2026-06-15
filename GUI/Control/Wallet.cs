@@ -27,7 +27,7 @@ namespace GUI
         {
             currentUser = authService.GetUserById(currentUser.Id);
             lblBalance.Text = $"Balance: {CurrencyConverter.Format(currentUser.Wallet.Balance, RuntimeConfig.Currency)}";
-            lblState.Text = $"State: {currentUser.Wallet.CurrentState}";
+            lblWalletStatus.Text = $"Wallet Status: {currentUser.Wallet.CurrentState}";
 
             btnActivate.Text = currentUser.Wallet.CurrentState == WalletState.Active
                 ? "Nonaktifkan Wallet"
