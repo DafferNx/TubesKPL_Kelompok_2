@@ -1,6 +1,6 @@
-﻿namespace GUI
+﻿namespace GUI.Control
 {
-    partial class RefundRequest
+    partial class GameDetail
     {
         /// <summary> 
         /// Required designer variable.

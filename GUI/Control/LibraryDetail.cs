@@ -6,11 +6,11 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace GUI
+namespace GUI.Control
 {
-    public partial class MainForm : Form
+    public partial class LibraryDetail : UserControl
     {
-        public MainForm()
+        public LibraryDetail()
         {
             InitializeComponent();
         }
