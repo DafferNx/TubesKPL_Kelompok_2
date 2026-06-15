@@ -2,15 +2,8 @@
 {
     partial class AdminForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,20 +13,91 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "AdminForm";
+            NavPanel = new Panel();
+            PagePanel = new Panel();
+            btnGameManagement = new Button();
+            btnRefundManagement = new Button();
+            btnWalletManagement = new Button();
+            btnLogout = new Button();
+            NavPanel.SuspendLayout();
+            SuspendLayout();
+            // 
+            // NavPanel
+            // 
+            NavPanel.Controls.Add(btnLogout);
+            NavPanel.Controls.Add(btnWalletManagement);
+            NavPanel.Controls.Add(btnRefundManagement);
+            NavPanel.Controls.Add(btnGameManagement);
+            NavPanel.Dock = DockStyle.Left;
+            NavPanel.Location = new Point(0, 0);
+            NavPanel.Name = "NavPanel";
+            NavPanel.Size = new Size(163, 450);
+            NavPanel.TabIndex = 0;
+            // 
+            // PagePanel
+            // 
+            PagePanel.Dock = DockStyle.Fill;
+            PagePanel.Location = new Point(163, 0);
+            PagePanel.Name = "PagePanel";
+            PagePanel.Size = new Size(637, 450);
+            PagePanel.TabIndex = 1;
+            // 
+            // btnGameManagement
+            // 
+            btnGameManagement.Location = new Point(24, 22);
+            btnGameManagement.Name = "btnGameManagement";
+            btnGameManagement.Size = new Size(112, 34);
+            btnGameManagement.TabIndex = 0;
+            btnGameManagement.Text = "Game";
+            btnGameManagement.UseVisualStyleBackColor = true;
+            // 
+            // btnRefundManagement
+            // 
+            btnRefundManagement.Location = new Point(24, 78);
+            btnRefundManagement.Name = "btnRefundManagement";
+            btnRefundManagement.Size = new Size(112, 34);
+            btnRefundManagement.TabIndex = 1;
+            btnRefundManagement.Text = "Refund";
+            btnRefundManagement.UseVisualStyleBackColor = true;
+            // 
+            // btnWalletManagement
+            // 
+            btnWalletManagement.Location = new Point(24, 141);
+            btnWalletManagement.Name = "btnWalletManagement";
+            btnWalletManagement.Size = new Size(112, 34);
+            btnWalletManagement.TabIndex = 2;
+            btnWalletManagement.Text = "Wallet";
+            btnWalletManagement.UseVisualStyleBackColor = true;
+            // 
+            // btnLogout
+            // 
+            btnLogout.Location = new Point(24, 360);
+            btnLogout.Name = "btnLogout";
+            btnLogout.Size = new Size(112, 34);
+            btnLogout.TabIndex = 3;
+            btnLogout.Text = "Logout";
+            btnLogout.UseVisualStyleBackColor = true;
+            // 
+            // AdminForm
+            // 
+            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 450);
+            Controls.Add(PagePanel);
+            Controls.Add(NavPanel);
+            Name = "AdminForm";
+            Text = "AdminForm";
+            NavPanel.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
-        #endregion
+        private Panel NavPanel;
+        private Button btnLogout;
+        private Button btnWalletManagement;
+        private Button btnRefundManagement;
+        private Button btnGameManagement;
+        private Panel PagePanel;
     }
 }

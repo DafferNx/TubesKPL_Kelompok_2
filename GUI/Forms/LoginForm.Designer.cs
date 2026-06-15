@@ -46,7 +46,7 @@
             label1.Size = new Size(125, 51);
             label1.TabIndex = 0;
             label1.Text = "SETIM";
-            label1.Click += label1_Click;
+
             // 
             // tbUsername
             // 
