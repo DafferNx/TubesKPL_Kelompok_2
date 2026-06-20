@@ -7,7 +7,7 @@ public static class Menu
     // Helper: format angka sesuai currency aktif dari RuntimeConfig
     private static string FormatMoney(int amount)
     {
-        return CurrencyConverter.Format(amount, RuntimeConfig.Currency);
+        return CurrencyConverter.Format(amount, RuntimeConfig.Instance.Currency);
     }
 
     public static void ShowRoleMenu()
@@ -22,7 +22,7 @@ public static class Menu
     {
         Console.WriteLine("=== STORE ===");
         Console.WriteLine($"User: {user.Username} | Wallet: {user.Wallet.CurrentState} | Balance: {FormatMoney(user.Wallet.Balance)}");
-        Console.WriteLine($"Currency aktif: {RuntimeConfig.Currency}");
+        Console.WriteLine($"Currency aktif: {RuntimeConfig.Instance.Currency}");
         Console.WriteLine();
 
         foreach (var game in games)

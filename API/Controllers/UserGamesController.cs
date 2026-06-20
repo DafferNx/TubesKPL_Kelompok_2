@@ -1,13 +1,21 @@
 using API.DataObjects;
+using API.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/user-games")]
+    [RequireSession]
     public class UserGamesController : ControllerBase
     {
         private readonly GameService gameService = new GameService();
+        private readonly ILogger<UserGamesController> _logger;
+
+        public UserGamesController(ILogger<UserGamesController> logger)
+        {
+            _logger = logger;
+        }
 
         [HttpGet("{userId}")]
         public IActionResult GetUserGames(int userId)
@@ -17,12 +25,13 @@ namespace API.Controllers
 
             try
             {
-                var games = gameService.getAllGames(userId);
+                var games = gameService.GetAllGames(userId);
                 return Ok(games);
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                _logger.LogWarning(ex, "Gagal mengambil game untuk user {UserId}", userId);
+                return NotFound("Data game untuk user tidak ditemukan.");
             }
         }
 
@@ -34,12 +43,13 @@ namespace API.Controllers
 
             try
             {
-                string message = gameService.addToCart(request.UserId, request.GameId);
+                string message = gameService.AddToCart(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal menambahkan game {GameId} ke cart user {UserId}", request.GameId, request.UserId);
+                return BadRequest("Gagal menambahkan game ke cart.");
             }
         }
 
@@ -51,12 +61,13 @@ namespace API.Controllers
 
             try
             {
-                string message = gameService.removeFromCart(request.UserId, request.GameId);
+                string message = gameService.RemoveFromCart(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal menghapus game {GameId} dari cart user {UserId}", request.GameId, request.UserId);
+                return BadRequest("Gagal menghapus game dari cart.");
             }
         }
 
@@ -68,12 +79,13 @@ namespace API.Controllers
 
             try
             {
-                string message = gameService.buyGame(request.UserId, request.GameId);
+                string message = gameService.BuyGame(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal memproses pembelian game {GameId} oleh user {UserId}", request.GameId, request.UserId);
+                return BadRequest("Gagal memproses pembelian.");
             }
         }
 
@@ -85,12 +97,13 @@ namespace API.Controllers
 
             try
             {
-                string message = gameService.checkoutCart(userId);
+                string message = gameService.CheckoutCart(userId);
                 return Ok(message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal checkout cart user {UserId}", userId);
+                return BadRequest("Gagal melakukan checkout.");
             }
         }
 
@@ -102,12 +115,13 @@ namespace API.Controllers
 
             try
             {
-                string message = gameService.requestRefund(request.UserId, request.GameId);
+                string message = gameService.RequestRefund(request.UserId, request.GameId);
                 return Ok(message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal mengajukan refund game {GameId} oleh user {UserId}", request.GameId, request.UserId);
+                return BadRequest("Gagal mengajukan refund.");
             }
         }
     }

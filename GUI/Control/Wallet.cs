@@ -46,8 +46,8 @@ namespace GUI
 
             // Saldo
             lblBalanceValue.Text  = CurrencyConverter.Format(
-                _currentUser.Wallet.Balance, RuntimeConfig.Currency);
-            lblCurrencyBadge.Text = RuntimeConfig.Currency;
+                _currentUser.Wallet.Balance, RuntimeConfig.Instance.Currency);
+            lblCurrencyBadge.Text = RuntimeConfig.Instance.Currency;
 
             // Status wallet
             bool isActive = _currentUser.Wallet.CurrentState == WalletState.Active;
@@ -102,14 +102,14 @@ namespace GUI
         // ── Currency Switcher ─────────────────────────────────────────────────
         private void SwitchCurrency(string code)
         {
-            if (RuntimeConfig.Currency == code) return;
+            if (RuntimeConfig.Instance.Currency == code) return;
 
-            RuntimeConfig.SetCurrency(code);
-            RuntimeConfig.Save(_configPath);
+            RuntimeConfig.Instance.SetCurrency(code);
+            RuntimeConfig.Instance.Save(_configPath);
 
             lblBalanceValue.Text  = CurrencyConverter.Format(
-                _currentUser.Wallet.Balance, RuntimeConfig.Currency);
-            lblCurrencyBadge.Text = RuntimeConfig.Currency;
+                _currentUser.Wallet.Balance, RuntimeConfig.Instance.Currency);
+            lblCurrencyBadge.Text = RuntimeConfig.Instance.Currency;
 
             RefreshCurrencyToggle();
             ShowSubtitleFeedback($"💱  Mata uang diubah ke {code}", Color.FromArgb(0, 180, 255));
@@ -117,7 +117,7 @@ namespace GUI
 
         private void RefreshCurrencyToggle()
         {
-            bool isIDR = RuntimeConfig.Currency == "IDR";
+            bool isIDR = RuntimeConfig.Instance.Currency == "IDR";
 
             btnIDR.BackColor = isIDR ? Color.FromArgb(0, 122, 255) : Color.Transparent;
             btnIDR.ForeColor = isIDR ? Color.White : Color.FromArgb(130, 130, 158);

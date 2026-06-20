@@ -10,6 +10,11 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
+    <!-- Microsoft.Data.Sqlite 10.0.8 membawa SQLitePCLRaw.lib.e_sqlite3 2.1.11 secara
+         transitif, yang punya kerentanan high severity (CVE-2025-6965, numeric
+         truncation di SQLite versi sebelum 3.50.2). Override eksplisit ke versi terbaru
+         yang tersedia di NuGet saat restore. Cek dengan perintah: dotnet list package vulnerable -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
   </ItemGroup>
 
   <ItemGroup>

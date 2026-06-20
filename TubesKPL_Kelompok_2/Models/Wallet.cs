@@ -55,7 +55,7 @@ public class Wallet
             return string.Join(Environment.NewLine, result.Errors.Select(error => error.ErrorMessage));
 
         Balance += amount;
-        return $"Top up berhasil. Balance sekarang: Rp{Balance}";
+        return $"Top up berhasil. Balance sekarang: {Libraries.CurrencyConverter.Format(Balance, RuntimeConfig.Instance.Currency)}";
     }
 
     public bool DeductBalance(int amount, out string message)
@@ -88,7 +88,7 @@ public class Wallet
         }
 
         Balance -= amount;
-        message = $"Pembayaran berhasil. Sisa saldo: Rp{Balance}";
+        message = $"Pembayaran berhasil. Sisa saldo: {Libraries.CurrencyConverter.Format(Balance, RuntimeConfig.Instance.Currency)}";
         return true;
     }
 }

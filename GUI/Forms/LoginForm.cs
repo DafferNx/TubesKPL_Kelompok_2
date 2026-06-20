@@ -46,5 +46,10 @@ namespace GUI.Forms
                 MessageBox.Show(ex.Message, "Login Gagal", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        // Handler kosong yang di-wire oleh Designer.cs (pola standar WinForms designer)
+        private void btnLogin_Click_1(object sender, EventArgs e) { }
+
+        private void LoginForm_Load(object sender, EventArgs e) { }
     }
 }

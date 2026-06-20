@@ -41,7 +41,7 @@ namespace GUI
         {
             try
             {
-                _allGames = _gameService.getOwnedGames(_currentUser.Id);
+                _allGames = _gameService.GetOwnedGames(_currentUser.Id);
             }
             catch (Exception ex)
             {
@@ -231,7 +231,7 @@ namespace GUI
 
             var lblPrice = new Label
             {
-                Text      = CurrencyConverter.Format(game.Price, RuntimeConfig.Currency),
+                Text      = CurrencyConverter.Format(game.Price, RuntimeConfig.Instance.Currency),
                 Font      = new Font("Segoe UI", 8.5f),
                 ForeColor = Color.FromArgb(140, 140, 165),
                 AutoSize  = false,
@@ -341,7 +341,7 @@ namespace GUI
 
             if (result == DialogResult.Yes)
             {
-                string msg = _gameService.requestRefund(_currentUser.Id, game.Id);
+                string msg = _gameService.RequestRefund(_currentUser.Id, game.Id);
                 ShowToast(msg);
                 RefreshData();
             }

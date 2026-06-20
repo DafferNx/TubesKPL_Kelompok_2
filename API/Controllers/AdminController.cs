@@ -1,13 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
 using API.DataObjects;
+using API.Security;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/admin")]
+    [RequireSession("Admin")]
     public class AdminController : ControllerBase
     {
         private readonly AdminService adminService = new AdminService();
+        private readonly ILogger<AdminController> _logger;
+
+        public AdminController(ILogger<AdminController> logger)
+        {
+            _logger = logger;
+        }
 
         [HttpGet("games")]
         public IActionResult GetGames()
@@ -27,7 +35,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                _logger.LogWarning(ex, "Game dengan ID {GameId} tidak ditemukan", id);
+                return NotFound("Game tidak ditemukan.");
             }
         }
 
@@ -69,7 +78,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                _logger.LogWarning(ex, "Gagal mengubah game dengan ID {GameId}", id);
+                return NotFound("Game tidak ditemukan.");
             }
         }
 
@@ -86,7 +96,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                _logger.LogWarning(ex, "Gagal menghapus game dengan ID {GameId}", id);
+                return NotFound("Game tidak ditemukan.");
             }
         }
 
@@ -109,7 +120,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal menyetujui refund user {UserId} game {GameId}", request.UserId, request.GameId);
+                return BadRequest("Gagal memproses refund.");
             }
         }
 
@@ -126,7 +138,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal menolak refund user {UserId} game {GameId}", request.UserId, request.GameId);
+                return BadRequest("Gagal memproses refund.");
             }
         }
 
@@ -143,7 +156,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal ban wallet user {UserId}", userId);
+                return BadRequest("Gagal memproses permintaan.");
             }
         }
 
@@ -160,7 +174,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, "Gagal unban wallet user {UserId}", userId);
+                return BadRequest("Gagal memproses permintaan.");
             }
         }
     }

@@ -29,7 +29,7 @@
             label1.ForeColor = Color.FromArgb(0, 150, 255);
             label1.Location = new Point(160, 40);
             label1.Name = "label1";
-            label1.Size = new Size(160, 62);
+            label1.Size = new Size(198, 74);
             label1.TabIndex = 0;
             label1.Text = "SETIM";
             // 
@@ -41,7 +41,7 @@
             tbUsername.ForeColor = Color.White;
             tbUsername.Location = new Point(70, 190);
             tbUsername.Name = "tbUsername";
-            tbUsername.Size = new Size(340, 32);
+            tbUsername.Size = new Size(340, 37);
             tbUsername.TabIndex = 1;
             // 
             // label2
@@ -51,7 +51,7 @@
             label2.ForeColor = Color.FromArgb(192, 192, 192);
             label2.Location = new Point(70, 160);
             label2.Name = "label2";
-            label2.Size = new Size(87, 23);
+            label2.Size = new Size(99, 28);
             label2.TabIndex = 2;
             label2.Text = "Username";
             // 
@@ -62,7 +62,7 @@
             label3.ForeColor = Color.FromArgb(192, 192, 192);
             label3.Location = new Point(70, 250);
             label3.Name = "label3";
-            label3.Size = new Size(80, 23);
+            label3.Size = new Size(93, 28);
             label3.TabIndex = 3;
             label3.Text = "Password";
             // 
@@ -74,7 +74,7 @@
             tbPassword.ForeColor = Color.White;
             tbPassword.Location = new Point(70, 280);
             tbPassword.Name = "tbPassword";
-            tbPassword.Size = new Size(340, 32);
+            tbPassword.Size = new Size(340, 37);
             tbPassword.TabIndex = 4;
             tbPassword.UseSystemPasswordChar = true;
             // 
@@ -91,6 +91,7 @@
             btnLogin.TabIndex = 5;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Click += btnLogin_Click_1;
             // 
             // panelLogin
             // 
@@ -117,6 +118,7 @@
             Name = "LoginForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "SETIM - Login";
+            Load += LoginForm_Load;
             ResumeLayout(false);
             PerformLayout();
         }
