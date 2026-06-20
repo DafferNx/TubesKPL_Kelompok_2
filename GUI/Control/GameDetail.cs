@@ -39,12 +39,12 @@ namespace GUI.Control
             if (_game == null) return;
 
             // Re-fetch agar status selalu terbaru dari DB
-            _game = _gameService.getGameById(_currentUser.Id, _game.Id) ?? _game;
+            _game = _gameService.GetGameById(_currentUser.Id, _game.Id) ?? _game;
 
             lblGameName.Text = _game.Name;
 
             // Harga menggunakan CurrencyConverter sesuai RuntimeConfig
-            lblPrice.Text = CurrencyConverter.Format(_game.Price, RuntimeConfig.Currency);
+            lblPrice.Text = CurrencyConverter.Format(_game.Price, RuntimeConfig.Instance.Currency);
 
             UpdateStatusBadge();
             UpdateActionButtons();
@@ -106,21 +106,21 @@ namespace GUI.Control
         private void btnBuyDirect_Click(object sender, EventArgs e)
         {
             if (_game == null) return;
-            ShowResult(_gameService.buyGame(_currentUser.Id, _game.Id));
+            ShowResult(_gameService.BuyGame(_currentUser.Id, _game.Id));
             RefreshView();
         }
 
         private void btnAddCart_Click(object sender, EventArgs e)
         {
             if (_game == null) return;
-            ShowResult(_gameService.addToCart(_currentUser.Id, _game.Id));
+            ShowResult(_gameService.AddToCart(_currentUser.Id, _game.Id));
             RefreshView();
         }
 
         private void btnRemoveCart_Click(object sender, EventArgs e)
         {
             if (_game == null) return;
-            ShowResult(_gameService.removeFromCart(_currentUser.Id, _game.Id));
+            ShowResult(_gameService.RemoveFromCart(_currentUser.Id, _game.Id));
             RefreshView();
         }
 

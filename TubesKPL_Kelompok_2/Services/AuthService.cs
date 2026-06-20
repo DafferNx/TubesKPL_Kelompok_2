@@ -14,7 +14,12 @@ public class AuthService
 
     public User Login(string username, string password)
     {
-        return authRepository.Login(username, password);
+        User user = authRepository.Login(username, password);
+
+        // Jangan biarkan hash password ikut terbawa keluar dari layer service —
+        // mencegah field sensitif bocor ke response API maupun tampilan GUI.
+        user.Password = string.Empty;
+        return user;
     }
 
     public User GetUserById(int userId)

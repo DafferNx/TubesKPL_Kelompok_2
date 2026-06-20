@@ -9,7 +9,7 @@ namespace GUI
         static void Main()
         {
             string configPath = Path.Combine(AppContext.BaseDirectory, "Data", "currency_config.json");
-            RuntimeConfig.Load(configPath);
+            RuntimeConfig.Instance.Load(configPath);
             DatabaseHelper.InitializeDatabase();
 
             ApplicationConfiguration.Initialize();

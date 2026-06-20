@@ -32,7 +32,7 @@ namespace GUI.Control
         // ── Init ─────────────────────────────────────────────────────────────────
         private void RefreshData()
         {
-            _allGames = _gameService.getAllGames(_currentUser.Id);
+            _allGames = _gameService.GetAllGames(_currentUser.Id);
             ApplyFilter();
         }
 
@@ -193,7 +193,7 @@ namespace GUI.Control
             // Harga menggunakan CurrencyConverter sesuai RuntimeConfig
             var lblPrice = new Label
             {
-                Text = CurrencyConverter.Format(game.Price, RuntimeConfig.Currency),
+                Text = CurrencyConverter.Format(game.Price, RuntimeConfig.Instance.Currency),
                 Font = new Font("Segoe UI", 9.5f),
                 ForeColor = Color.FromArgb(180, 180, 180),
                 Location = new Point(18, 38),

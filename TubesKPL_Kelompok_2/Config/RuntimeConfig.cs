@@ -1,16 +1,34 @@
 using System;
+using System.Collections.Generic;
 
-public static class RuntimeConfig
+/// <summary>
+/// Singleton pattern — hanya ada satu sumber kebenaran untuk currency aktif
+/// di seluruh aplikasi (console, GUI, maupun API). Mencegah konflik state
+/// jika beberapa bagian kode mencoba membaca/menulis currency secara bersamaan.
+/// </summary>
+public sealed class RuntimeConfig
 {
-    public static string Currency { get; private set; } = "IDR";
+    private static readonly Lazy<RuntimeConfig> _instance =
+        new Lazy<RuntimeConfig>(() => new RuntimeConfig());
+
+    public static RuntimeConfig Instance => _instance.Value;
+
+    public string Currency { get; private set; } = "IDR";
+
+    private string? _loadedFilePath;
+
+    // Constructor private — tidak bisa di-instansiasi dari luar (Singleton)
+    private RuntimeConfig() { }
 
     public class CurrencyConfigData
     {
         public string Currency { get; set; } = "IDR";
     }
 
-    public static void Load(string filePath)
+    public void Load(string filePath)
     {
+        _loadedFilePath = filePath;
+
         try
         {
             var repo = new Repository<CurrencyConfigData>();
@@ -39,7 +57,7 @@ public static class RuntimeConfig
         }
     }
 
-    public static string SetCurrency(string currencyCode)
+    public string SetCurrency(string currencyCode)
     {
         if (string.IsNullOrWhiteSpace(currencyCode))
             return "Currency tidak boleh kosong";
@@ -54,14 +72,19 @@ public static class RuntimeConfig
     }
 
     /// <summary>
-    /// Menyimpan currency yang aktif ke file JSON agar persist setelah restart.
+    /// Menyimpan currency aktif ke file JSON menggunakan Repository&lt;T&gt; generic
+    /// yang sama dipakai saat Load — konsisten dengan teknik Parameterization/Generics.
     /// </summary>
-    public static void Save(string filePath)
+    public void Save(string? filePath = null)
     {
+        string targetPath = filePath ?? _loadedFilePath
+            ?? throw new InvalidOperationException("Path config belum diketahui. Panggil Load() terlebih dahulu atau berikan filePath.");
+
         try
         {
-            string json = $"[\r\n  {{\r\n    \"Currency\": \"{Currency}\"\r\n  }}\r\n]\r\n";
-            System.IO.File.WriteAllText(filePath, json);
+            var repo = new Repository<CurrencyConfigData>();
+            var data = new List<CurrencyConfigData> { new CurrencyConfigData { Currency = Currency } };
+            repo.Save(targetPath, data);
         }
         catch (Exception ex)
         {

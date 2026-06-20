@@ -7,6 +7,12 @@ namespace API.Controllers
     public class GamesController : ControllerBase
     {
         private readonly AdminService adminService = new AdminService();
+        private readonly ILogger<GamesController> _logger;
+
+        public GamesController(ILogger<GamesController> logger)
+        {
+            _logger = logger;
+        }
 
         [HttpGet]
         public IActionResult GetGames()
@@ -26,7 +32,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                _logger.LogWarning(ex, "Game dengan ID {GameId} tidak ditemukan", id);
+                return NotFound("Game tidak ditemukan.");
             }
         }
     }

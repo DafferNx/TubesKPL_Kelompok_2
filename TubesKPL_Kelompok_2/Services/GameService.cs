@@ -18,17 +18,17 @@ public class GameService
         walletRepository = new WalletRepository();
     }
 
-    public List<Game> getAllGames(int userId)
+    public List<Game> GetAllGames(int userId)
     {
         return gameRepository.GetGamesForUser(userId);
     }
 
-    public Game getGameById(int userId, int gameId)
+    public Game GetGameById(int userId, int gameId)
     {
         return gameRepository.GetGameForUser(userId, gameId);
     }
 
-    public string addToCart(int userId, int gameId)
+    public string AddToCart(int userId, int gameId)
     {
         var game = gameRepository.GetGameForUser(userId, gameId);
         if (game == null) return "Game tidak ditemukan";
@@ -39,7 +39,7 @@ public class GameService
         return ChangeGameStatus(userId, game, GameAction.AddToCart, "Game berhasil ditambahkan ke cart");
     }
 
-    public string removeFromCart(int userId, int gameId)
+    public string RemoveFromCart(int userId, int gameId)
     {
         var game = gameRepository.GetGameForUser(userId, gameId);
         if (game == null) return "Game tidak ditemukan";
@@ -49,7 +49,7 @@ public class GameService
         return "Game berhasil dihapus dari cart";
     }
 
-    public string buyGame(int userId, int gameId)
+    public string BuyGame(int userId, int gameId)
     {
         var user = userRepository.GetUserById(userId);
         if (user == null) return "User tidak ditemukan";
@@ -73,7 +73,7 @@ public class GameService
         return $"{stateMessage}. {walletMessage}";
     }
 
-    public string checkoutCart(int userId)
+    public string CheckoutCart(int userId)
     {
         var user = userRepository.GetUserById(userId);
         if (user == null) return "User tidak ditemukan";
@@ -96,7 +96,7 @@ public class GameService
         return $"Semua game di cart berhasil dibeli. {walletMessage}";
     }
 
-    public string requestRefund(int userId, int gameId)
+    public string RequestRefund(int userId, int gameId)
     {
         var game = gameRepository.GetGameForUser(userId, gameId);
         if (game == null) return "Game tidak ditemukan";
@@ -110,19 +110,19 @@ public class GameService
         return ChangeGameStatus(userId, game, GameAction.RequestRefund, "Request refund berhasil diajukan dan menunggu persetujuan admin");
     }
 
-    public List<Game> getCartGames(int userId)
+    public List<Game> GetCartGames(int userId)
     {
         return gameRepository.GetGamesByStatus(userId, GameStatus.Cart);
     }
 
-    public List<Game> getOwnedGames(int userId)
+    public List<Game> GetOwnedGames(int userId)
     {
         return gameRepository.GetGamesByStatus(userId, GameStatus.Owned, GameStatus.PendingRefund);
     }
 
-    public int getTotalCartPrice(int userId)
+    public int GetTotalCartPrice(int userId)
     {
-        return getCartGames(userId).Sum(game => game.Price);
+        return GetCartGames(userId).Sum(game => game.Price);
     }
 
     private string ChangeGameStatus(int userId, Game game, GameAction action, string successMessage)

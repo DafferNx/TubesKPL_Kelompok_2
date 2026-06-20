@@ -30,7 +30,7 @@ namespace GUI.Control
 
                 foreach (var game in refunds)
                 {
-                    dgvRefunds.Rows.Add(game.UserId, game.Id, game.Name, CurrencyConverter.Format(game.Price, RuntimeConfig.Currency));
+                    dgvRefunds.Rows.Add(game.UserId, game.Id, game.Name, CurrencyConverter.Format(game.Price, RuntimeConfig.Instance.Currency));
                 }
             }
             catch (Exception ex)

@@ -22,7 +22,7 @@ class Program
     {
         // Muat konfigurasi currency dari JSON sebelum dijalankan
         string configPath = Path.Combine(AppContext.BaseDirectory, "Data", "currency_config.json");
-        RuntimeConfig.Load(configPath);
+        RuntimeConfig.Instance.Load(configPath);
 
         DatabaseHelper.InitializeDatabase();
 
@@ -77,7 +77,7 @@ class Program
 
                     // Refresh user data melalui AuthService
                     currentUser = authService.GetUserById(currentUser.Id);
-                    List<Game> storeGames = gameService.getAllGames(currentUser.Id);
+                    List<Game> storeGames = gameService.GetAllGames(currentUser.Id);
                     Menu.ShowStore(storeGames, currentUser);
                     int storeInput = Menu.GetInput();
 
@@ -124,7 +124,7 @@ class Program
                             }
                             else
                             {
-                                selectedGame = gameService.getGameById(currentUser.Id, storeInput);
+                                selectedGame = gameService.GetGameById(currentUser.Id, storeInput);
                                 currentPage = Page.Detail;
                             }
                         }
@@ -146,19 +146,19 @@ class Program
                         break;
                     }
 
-                    selectedGame = gameService.getGameById(currentUser.Id, selectedGame.Id);
+                    selectedGame = gameService.GetGameById(currentUser.Id, selectedGame.Id);
                     Menu.ShowGameDetail(selectedGame);
                     int detailInput = Menu.GetInput();
 
                     if (detailInput == 1)
                     {
-                        string message = gameService.buyGame(currentUser.Id, selectedGame.Id);
+                        string message = gameService.BuyGame(currentUser.Id, selectedGame.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
                     else if (detailInput == 2)
                     {
-                        string message = gameService.addToCart(currentUser.Id, selectedGame.Id);
+                        string message = gameService.AddToCart(currentUser.Id, selectedGame.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Cart;
                     }
@@ -180,15 +180,15 @@ class Program
                     }
 
                     currentUser = authService.GetUserById(currentUser.Id);
-                    var cartGames = gameService.getCartGames(currentUser.Id);
-                    int totalPrice = gameService.getTotalCartPrice(currentUser.Id);
+                    var cartGames = gameService.GetCartGames(currentUser.Id);
+                    int totalPrice = gameService.GetTotalCartPrice(currentUser.Id);
 
                     Menu.ShowCart(cartGames, totalPrice);
                     int cartInput = Menu.GetInput();
 
                     if (cartInput == 1)
                     {
-                        string message = gameService.checkoutCart(currentUser.Id);
+                        string message = gameService.CheckoutCart(currentUser.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }
@@ -203,7 +203,7 @@ class Program
                         {
                             try
                             {
-                                string message = gameService.removeFromCart(currentUser.Id, gameId);
+                                string message = gameService.RemoveFromCart(currentUser.Id, gameId);
                                 Menu.ShowMessage(message);
                             }
                             catch (Exception ex)
@@ -229,7 +229,7 @@ class Program
                         break;
                     }
 
-                    var ownedGames = gameService.getOwnedGames(currentUser.Id);
+                    var ownedGames = gameService.GetOwnedGames(currentUser.Id);
                     Menu.ShowLibrary(ownedGames);
                     int libraryInput = Menu.GetInput();
 
@@ -241,7 +241,7 @@ class Program
                     {
                         try
                         {
-                            selectedGame = gameService.getGameById(currentUser.Id, libraryInput);
+                            selectedGame = gameService.GetGameById(currentUser.Id, libraryInput);
 
                             if (selectedGame.Status != GameStatus.Owned && selectedGame.Status != GameStatus.PendingRefund)
                             {
@@ -266,7 +266,7 @@ class Program
                         break;
                     }
 
-                    selectedGame = gameService.getGameById(currentUser.Id, selectedGame.Id);
+                    selectedGame = gameService.GetGameById(currentUser.Id, selectedGame.Id);
                     Menu.ShowLibraryDetail(selectedGame);
                     int libraryDetailInput = Menu.GetInput();
 
@@ -276,7 +276,7 @@ class Program
                     }
                     else if (libraryDetailInput == 2)
                     {
-                        string message = gameService.requestRefund(currentUser.Id, selectedGame.Id);
+                        string message = gameService.RequestRefund(currentUser.Id, selectedGame.Id);
                         Menu.ShowMessage(message);
                         currentPage = Page.Library;
                     }

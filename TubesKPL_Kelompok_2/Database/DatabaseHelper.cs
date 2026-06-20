@@ -306,15 +306,21 @@ public static class DatabaseHelper
             SELECT u.Id, u.Username, u.Password, u.Role, w.Balance, w.State
             FROM Users u
             INNER JOIN Wallets w ON w.UserId = u.Id
-            WHERE u.Username = $username AND u.Password = $password;";
+            WHERE u.Username = $username;";
         command.Parameters.AddWithValue("$username", username);
-        command.Parameters.AddWithValue("$password", password);
 
         using var reader = command.ExecuteReader();
         if (!reader.Read())
             throw new Exception("Username atau password salah");
 
-        return MapUser(reader);
+        User user = MapUser(reader);
+
+        // Password diverifikasi di application layer menggunakan PBKDF2,
+        // bukan dibandingkan langsung di SQL WHERE clause (hindari plaintext compare).
+        if (!TubesKPL_Kelompok_2.Security.PasswordHasher.Verify(password, user.Password))
+            throw new Exception("Username atau password salah");
+
+        return user;
     }
 
     public static User GetUserById(int userId)
@@ -510,8 +516,8 @@ public static class DatabaseHelper
 
     private static void SeedDefaultData(SqliteConnection connection)
     {
-        InsertUserIfNotExists(connection, "budi", "123", UserRole.User);
-        InsertUserIfNotExists(connection, "admin", "admin", UserRole.Admin);
+        InsertUserIfNotExists(connection, "budi", TubesKPL_Kelompok_2.Security.PasswordHasher.Hash("123"), UserRole.User);
+        InsertUserIfNotExists(connection, "admin", TubesKPL_Kelompok_2.Security.PasswordHasher.Hash("admin"), UserRole.Admin);
 
         using var countCommand = connection.CreateCommand();
         countCommand.CommandText = "SELECT COUNT(*) FROM Games;";

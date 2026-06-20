@@ -38,7 +38,7 @@ namespace GUI
         {
             try
             {
-                _cartGames = gameService.getCartGames(currentUser.Id);
+                _cartGames = gameService.GetCartGames(currentUser.Id);
             }
             catch (Exception ex)
             {
@@ -53,12 +53,12 @@ namespace GUI
         private void UpdateSummary()
         {
             int count = _cartGames.Count;
-            int total = count > 0 ? gameService.getTotalCartPrice(currentUser.Id) : 0;
+            int total = count > 0 ? gameService.GetTotalCartPrice(currentUser.Id) : 0;
 
             lblItemCount.Text = $"{count} item";
             lblTotal.Text     = count == 0
                 ? "Rp 0"
-                : CurrencyConverter.Format(total, RuntimeConfig.Currency);
+                : CurrencyConverter.Format(total, RuntimeConfig.Instance.Currency);
 
             // Tombol checkout hanya aktif jika ada item
             btnCheckout.Enabled   = count > 0;
@@ -150,7 +150,7 @@ namespace GUI
             // Harga
             var lblPrice = new Label
             {
-                Text      = CurrencyConverter.Format(game.Price, RuntimeConfig.Currency),
+                Text      = CurrencyConverter.Format(game.Price, RuntimeConfig.Instance.Currency),
                 Font      = new Font("Segoe UI", 9.5f),
                 ForeColor = Color.FromArgb(170, 170, 190),
                 AutoSize  = true,
@@ -220,16 +220,16 @@ namespace GUI
                 return;
             }
 
-            int total = gameService.getTotalCartPrice(currentUser.Id);
+            int total = gameService.GetTotalCartPrice(currentUser.Id);
             var confirm = MessageBox.Show(
-                $"Checkout {_cartGames.Count} game?\nTotal: {CurrencyConverter.Format(total, RuntimeConfig.Currency)}",
+                $"Checkout {_cartGames.Count} game?\nTotal: {CurrencyConverter.Format(total, RuntimeConfig.Instance.Currency)}",
                 "Konfirmasi Checkout",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (confirm != DialogResult.Yes) return;
 
-            string result = gameService.checkoutCart(currentUser.Id);
+            string result = gameService.CheckoutCart(currentUser.Id);
             ShowToast($"✅ {result}");
             LoadCart();
         }
@@ -244,7 +244,7 @@ namespace GUI
 
             if (confirm != DialogResult.Yes) return;
 
-            string result = gameService.removeFromCart(currentUser.Id, game.Id);
+            string result = gameService.RemoveFromCart(currentUser.Id, game.Id);
             ShowToast($"🗑  {result}");
             LoadCart();
         }
